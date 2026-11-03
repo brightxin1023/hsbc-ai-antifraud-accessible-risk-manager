@@ -1,7 +1,9 @@
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI
+from dotenv import load_dotenv
 
 app = FastAPI()
 
@@ -12,9 +14,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ⚠️ 替换成你的 DeepSeek API Key
+load_dotenv() # 加载 .env 文件
 client = OpenAI(
-    api_key="sk-a5184d7e0b124eb9a47d6a68cbf06478", 
+    api_key=os.getenv("DEEPSEEK_API_KEY"),
     base_url="https://api.deepseek.com"
 )
 
