@@ -6,9 +6,9 @@ export default function App() {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 注：目前使用 localtunnel 进行内网穿透，以便手机在公网环境下访问本地 FastAPI 后端。
-  // 生产环境部署时，应替换为 AWS API Gateway / 云服务器的真实域名地址。
-  const API_URL = 'https://thin-pens-speak.loca.lt/api/detect';
+// 注：黑客松现场演示模式，通过手机热点局域网直连本地 FastAPI 后端，确保极速响应。
+// 生产环境部署时，应替换为云服务器（如 AWS/阿里云）的正式域名地址。
+const API_URL = 'http://172.20.10.3:8000/api/detect';
 
   const checkFraud = async () => {
     if (!inputText) {
