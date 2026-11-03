@@ -6,7 +6,8 @@ export default function App() {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // ⚠️ 注意：把这里的 IP 换成你刚才查到的电脑 IPv4 地址！后端端口是 8000
+  // 注：目前使用 localtunnel 进行内网穿透，以便手机在公网环境下访问本地 FastAPI 后端。
+  // 生产环境部署时，应替换为 AWS API Gateway / 云服务器的真实域名地址。
   const API_URL = 'https://thin-pens-speak.loca.lt/api/detect';
 
   const checkFraud = async () => {
