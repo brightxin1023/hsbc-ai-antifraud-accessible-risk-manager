@@ -3,19 +3,26 @@ import { StyleSheet, Text, View, TextInput, Pressable, Alert, ActivityIndicator,
 import * as Haptics from 'expo-haptics';
 
 export default function App() {
-  // 状态：当前在哪个页面（'home' | 'detect' | 'qa' | 'edu'）
   const [currentPage, setCurrentPage] = useState('home');
+  
+  // 检测页状态
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [isFrozen, setIsFrozen] = useState(false);
+  
+  // 问答页状态
+  const [qaQuery, setQaQuery] = useState('');
+  const [qaAnswer, setQaAnswer] = useState('');
+  const [qaLoading, setQaLoading] = useState(false);
 
-  const API_URL = 'http://172.20.10.3:8000/api/detect';
+  // ⚠️ 注意：确保这里是你电脑的局域网 IP（你现在连着热点，应该是 172.20.10.3）
+  const BASE_URL = 'http://172.20.10.3:8000';
 
   const checkFraud = async () => {
     if (!inputText) return Alert.alert("提示", "请输入可疑信息");
     setLoading(true);
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${BASE_URL}/api/detect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: inputText }),
@@ -47,25 +54,42 @@ export default function App() {
     }
   };
 
-  // 底部导航栏组件
+  const askQuestion = async () => {
+    if (!qaQuery) return Alert.alert("提示", "请输入您的问题");
+    setQaLoading(true);
+    setQaAnswer('');
+    try {
+      const response = await fetch(`${BASE_URL}/api/qa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: qaQuery }),
+      });
+      const data = await response.json();
+      setQaAnswer(data.answer);
+    } catch (error) {
+      Alert.alert("网络错误", "无法连接到后端");
+    } finally {
+      setQaLoading(false);
+    }
+  };
+
   const BottomNav = () => (
     <View style={styles.navBar}>
-      <Pressable onPress={() => setCurrentPage('home')} style={styles.navItem} accessibilityRole="button" accessibilityLabel="首页">
+      <Pressable onPress={() => setCurrentPage('home')} style={styles.navItem}>
         <Text style={[styles.navText, currentPage === 'home' && styles.navTextActive]}>🏠 首页</Text>
       </Pressable>
-      <Pressable onPress={() => setCurrentPage('detect')} style={styles.navItem} accessibilityRole="button" accessibilityLabel="智能检测">
+      <Pressable onPress={() => setCurrentPage('detect')} style={styles.navItem}>
         <Text style={[styles.navText, currentPage === 'detect' && styles.navTextActive]}>🛡️ 检测</Text>
       </Pressable>
-      <Pressable onPress={() => setCurrentPage('qa')} style={styles.navItem} accessibilityRole="button" accessibilityLabel="反诈问答">
+      <Pressable onPress={() => setCurrentPage('qa')} style={styles.navItem}>
         <Text style={[styles.navText, currentPage === 'qa' && styles.navTextActive]}>💬 问答</Text>
       </Pressable>
-      <Pressable onPress={() => setCurrentPage('edu')} style={styles.navItem} accessibilityRole="button" accessibilityLabel="反诈科普">
+      <Pressable onPress={() => setCurrentPage('edu')} style={styles.navItem}>
         <Text style={[styles.navText, currentPage === 'edu' && styles.navTextActive]}>📖 科普</Text>
       </Pressable>
     </View>
   );
 
-  // 页面：首页（登录 + 交易流水）
   const HomePage = () => (
     <ScrollView style={styles.pageContainer}>
       <View style={styles.headerCard}>
@@ -82,14 +106,12 @@ export default function App() {
         <Text style={styles.txAmountPositive}>+ ¥ 12,500.00</Text>
       </View>
       {isFrozen && <Text style={styles.frozenAlert}>⚠️ 账户已冻结，拦截异常转账</Text>}
-      
       <Pressable style={styles.sosButton} onPress={() => Alert.alert("📞 人工协助", "正在拨打专属客服...")}>
         <Text style={styles.buttonText}>一键呼叫人工协助</Text>
       </Pressable>
     </ScrollView>
   );
 
-  // 页面：检测页（你原有的）
   const DetectPage = () => (
     <View style={styles.pageContainer}>
       <Text style={styles.sectionTitle}>AI 异常交易检测</Text>
@@ -106,11 +128,35 @@ export default function App() {
     </View>
   );
 
+  const QAPage = () => (
+    <ScrollView style={styles.pageContainer}>
+      <Text style={styles.sectionTitle}>反诈智能问答</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="遇到不懂的套路？直接问 AI 助手"
+        multiline
+        value={qaQuery}
+        onChangeText={setQaQuery}
+      />
+      <Pressable style={styles.actionButton} onPress={askQuestion} disabled={qaLoading}>
+        {qaLoading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>向 AI 提问</Text>}
+      </Pressable>
+
+      {qaAnswer ? (
+        <View style={styles.answerCard}>
+          <Text style={styles.answerTitle}>AI 助手回答：</Text>
+          <Text style={styles.answerText}>{qaAnswer}</Text>
+        </View>
+      ) : null}
+    </ScrollView>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {currentPage === 'home' && <HomePage />}
       {currentPage === 'detect' && <DetectPage />}
-      {/* 其他页面后续加 */}
+      {currentPage === 'qa' && <QAPage />}
+      {currentPage === 'edu' && <View style={styles.pageContainer}><Text>科普页面开发中...</Text></View>}
       <BottomNav />
     </SafeAreaView>
   );
@@ -128,12 +174,15 @@ const styles = StyleSheet.create({
   txAmount: { fontSize: 18, fontWeight: 'bold', color: '#D32F2F' },
   txAmountPositive: { fontSize: 18, fontWeight: 'bold', color: '#2E7D32' },
   frozenAlert: { color: '#D32F2F', fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginVertical: 15 },
-  input: { backgroundColor: 'white', borderRadius: 10, padding: 15, fontSize: 18, height: 150, textAlignVertical: 'top', marginBottom: 20 },
+  input: { backgroundColor: 'white', borderRadius: 10, padding: 15, fontSize: 18, height: 120, textAlignVertical: 'top', marginBottom: 20 },
   actionButton: { backgroundColor: '#D32F2F', padding: 18, borderRadius: 10, alignItems: 'center' },
   sosButton: { backgroundColor: '#FF9800', padding: 18, borderRadius: 10, alignItems: 'center', marginTop: 30 },
   buttonText: { color: 'white', fontSize: 20, fontWeight: 'bold' },
   navBar: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 15, backgroundColor: 'white', borderTopWidth: 1, borderColor: '#ddd' },
   navItem: { alignItems: 'center' },
   navText: { fontSize: 16, color: '#666' },
-  navTextActive: { color: '#D32F2F', fontWeight: 'bold' }
+  navTextActive: { color: '#D32F2F', fontWeight: 'bold' },
+  answerCard: { backgroundColor: '#fff', padding: 20, borderRadius: 10, marginTop: 20, borderLeftWidth: 5, borderLeftColor: '#D32F2F' },
+  answerTitle: { fontSize: 18, fontWeight: 'bold', color: '#D32F2F', marginBottom: 10 },
+  answerText: { fontSize: 18, color: '#333', lineHeight: 28 }
 });

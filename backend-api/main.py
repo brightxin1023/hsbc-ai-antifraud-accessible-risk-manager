@@ -1,4 +1,5 @@
 import os
+import json
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -66,3 +67,50 @@ def detect_fraud(transaction: Transaction):
         if "安全账户" in user_text or "洗钱" in user_text:
             return {"risk_level": "high", "scam_type": "冒充公检法", "suggestion": "立即拦截交易"}
         return {"risk_level": "low", "scam_type": "无", "suggestion": f"系统错误:{str(e)}"}
+
+    # --- 以下是 RAG 问答接口 ---
+
+def load_knowledge_base():
+    try:
+        with open("scams.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"读取知识库失败: {e}")
+        return []
+
+class Question(BaseModel):
+    query: str
+
+@app.post("/api/qa")
+def answer_question(question: Question):
+    user_query = question.query
+    kb = load_knowledge_base()
+    
+    # 简易 RAG 检索：根据关键词匹配
+    matched_info = "暂无匹配的明确诈骗剧本。"
+    for item in kb:
+        if any(kw in user_query for kw in item["keywords"]):
+            matched_info = f"【匹配剧本】: {item['type']}\n【套路说明】: {item['description']}\n【防骗建议】: {item['advice']}"
+            break
+            
+    system_prompt = f"""
+    你是一个专业的反诈AI助手，专门为老年人及残障人士解答问题。
+    请用简单、易懂的大白话回答用户的问题。
+    以下是系统为你检索到的相关诈骗知识：
+    {matched_info}
+    
+    请结合上述知识，用富有同理心的语气回答用户，不要超过150个字。
+    """
+    
+    try:
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_query}
+            ],
+            temperature=0.3
+        )
+        return {"answer": response.choices[0].message.content}
+    except Exception as e:
+        return {"answer": f"抱歉，系统繁忙，请稍后再试。错误信息: {str(e)}"}
