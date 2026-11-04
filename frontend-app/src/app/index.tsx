@@ -1,21 +1,18 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Pressable, Alert, ActivityIndicator, ScrollView, SafeAreaView } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
 export default function App() {
+  // 状态：当前在哪个页面（'home' | 'detect' | 'qa' | 'edu'）
+  const [currentPage, setCurrentPage] = useState('home');
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isFrozen, setIsFrozen] = useState(false);
 
-// 注：黑客松现场演示模式，通过手机热点局域网直连本地 FastAPI 后端，确保极速响应。
-// 生产环境部署时，应替换为云服务器（如 AWS/阿里云）的正式域名地址。
-const API_URL = 'http://172.20.10.3:8000/api/detect';
+  const API_URL = 'http://172.20.10.3:8000/api/detect';
 
   const checkFraud = async () => {
-    if (!inputText) {
-      Alert.alert("提示", "请输入转账附言或对方发来的信息");
-      return;
-    }
-
+    if (!inputText) return Alert.alert("提示", "请输入可疑信息");
     setLoading(true);
     try {
       const response = await fetch(API_URL, {
@@ -23,69 +20,120 @@ const API_URL = 'http://172.20.10.3:8000/api/detect';
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: inputText }),
       });
-
       const data = await response.json();
       
       if (data.risk_level === 'high') {
-        // 触发高危震动
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        // 弹出无障碍大字警告
         Alert.alert(
           "⚠️ 高危诈骗拦截", 
-          `识别类型：${data.scam_type}\n建议操作：${data.suggestion}`
+          `识别类型：${data.scam_type}\n建议操作：${data.suggestion}\n\n是否立刻冻结账户？`,
+          [
+            { text: "取消", style: "cancel" },
+            { text: "一键冻结", style: "destructive", onPress: () => {
+                setIsFrozen(true);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                Alert.alert("🛡️ 已冻结", "资金已保护，已自动通知您的家属。");
+            }}
+          ]
         );
       } else {
-        // 安全提示
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         Alert.alert("✅ 交易安全", "未发现明显诈骗特征");
       }
     } catch (error) {
-      Alert.alert("网络错误", "无法连接到后端 AI 服务，请检查电脑 IP 和 Wi-Fi。");
+      Alert.alert("网络错误", "无法连接到后端");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>AI 反诈盾及无障碍风险管家</Text>
+  // 底部导航栏组件
+  const BottomNav = () => (
+    <View style={styles.navBar}>
+      <Pressable onPress={() => setCurrentPage('home')} style={styles.navItem} accessibilityRole="button" accessibilityLabel="首页">
+        <Text style={[styles.navText, currentPage === 'home' && styles.navTextActive]}>🏠 首页</Text>
+      </Pressable>
+      <Pressable onPress={() => setCurrentPage('detect')} style={styles.navItem} accessibilityRole="button" accessibilityLabel="智能检测">
+        <Text style={[styles.navText, currentPage === 'detect' && styles.navTextActive]}>🛡️ 检测</Text>
+      </Pressable>
+      <Pressable onPress={() => setCurrentPage('qa')} style={styles.navItem} accessibilityRole="button" accessibilityLabel="反诈问答">
+        <Text style={[styles.navText, currentPage === 'qa' && styles.navTextActive]}>💬 问答</Text>
+      </Pressable>
+      <Pressable onPress={() => setCurrentPage('edu')} style={styles.navItem} accessibilityRole="button" accessibilityLabel="反诈科普">
+        <Text style={[styles.navText, currentPage === 'edu' && styles.navTextActive]}>📖 科普</Text>
+      </Pressable>
+    </View>
+  );
+
+  // 页面：首页（登录 + 交易流水）
+  const HomePage = () => (
+    <ScrollView style={styles.pageContainer}>
+      <View style={styles.headerCard}>
+        <Text style={styles.headerTitle}>账户已安全绑定 (无障碍登录)</Text>
+        <Text style={styles.headerSubtitle}>尾号 8888 储蓄卡</Text>
+      </View>
+      <Text style={styles.sectionTitle}>近期交易流水</Text>
+      <View style={styles.transactionCard}>
+        <Text style={styles.txText}>转账 - 某某科技有限公司</Text>
+        <Text style={styles.txAmount}>- ¥ 8,000.00</Text>
+      </View>
+      <View style={styles.transactionCard}>
+        <Text style={styles.txText}>收款 - 工资入账</Text>
+        <Text style={styles.txAmountPositive}>+ ¥ 12,500.00</Text>
+      </View>
+      {isFrozen && <Text style={styles.frozenAlert}>⚠️ 账户已冻结，拦截异常转账</Text>}
       
+      <Pressable style={styles.sosButton} onPress={() => Alert.alert("📞 人工协助", "正在拨打专属客服...")}>
+        <Text style={styles.buttonText}>一键呼叫人工协助</Text>
+      </Pressable>
+    </ScrollView>
+  );
+
+  // 页面：检测页（你原有的）
+  const DetectPage = () => (
+    <View style={styles.pageContainer}>
+      <Text style={styles.sectionTitle}>AI 异常交易检测</Text>
       <TextInput
         style={styles.input}
         placeholder="请粘贴可疑聊天记录或转账附言"
-        placeholderTextColor="#666"
         multiline
         value={inputText}
         onChangeText={setInputText}
-        accessibilityLabel="输入可疑信息"
       />
-
-      <Pressable 
-        style={[styles.button, loading && { backgroundColor: '#999' }]} 
-        onPress={checkFraud}
-        disabled={loading}
-        accessibilityRole="button"
-        accessibilityLabel="点击进行AI反诈检测"
-      >
-        {loading ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <Text style={styles.buttonText}>开始 AI 检测</Text>
-        )}
+      <Pressable style={styles.actionButton} onPress={checkFraud} disabled={loading}>
+        {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>开始 AI 检测</Text>}
       </Pressable>
-
-      <Text style={styles.testHint}>
-        测试样例：{"\n"}“我是公安局的，你的卡涉嫌洗钱，请把钱转入安全账户”
-      </Text>
     </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {currentPage === 'home' && <HomePage />}
+      {currentPage === 'detect' && <DetectPage />}
+      {/* 其他页面后续加 */}
+      <BottomNav />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5', padding: 20, paddingTop: 60 },
-  title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 30, color: '#333' },
-  input: { backgroundColor: 'white', borderRadius: 10, padding: 15, fontSize: 18, height: 120, textAlignVertical: 'top', marginBottom: 20, borderWidth: 1, borderColor: '#ccc' },
-  button: { backgroundColor: '#D32F2F', padding: 18, borderRadius: 10, alignItems: 'center', marginBottom: 20 },
+  container: { flex: 1, backgroundColor: '#f0f2f5' },
+  pageContainer: { flex: 1, padding: 20 },
+  headerCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 12, marginBottom: 20 },
+  headerTitle: { color: 'white', fontSize: 20, fontWeight: 'bold' },
+  headerSubtitle: { color: 'white', fontSize: 16, marginTop: 5 },
+  sectionTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 15, color: '#333' },
+  transactionCard: { backgroundColor: 'white', padding: 20, borderRadius: 10, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between' },
+  txText: { fontSize: 18 },
+  txAmount: { fontSize: 18, fontWeight: 'bold', color: '#D32F2F' },
+  txAmountPositive: { fontSize: 18, fontWeight: 'bold', color: '#2E7D32' },
+  frozenAlert: { color: '#D32F2F', fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginVertical: 15 },
+  input: { backgroundColor: 'white', borderRadius: 10, padding: 15, fontSize: 18, height: 150, textAlignVertical: 'top', marginBottom: 20 },
+  actionButton: { backgroundColor: '#D32F2F', padding: 18, borderRadius: 10, alignItems: 'center' },
+  sosButton: { backgroundColor: '#FF9800', padding: 18, borderRadius: 10, alignItems: 'center', marginTop: 30 },
   buttonText: { color: 'white', fontSize: 20, fontWeight: 'bold' },
-  testHint: { fontSize: 14, color: '#666', textAlign: 'center', fontStyle: 'italic' }
+  navBar: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 15, backgroundColor: 'white', borderTopWidth: 1, borderColor: '#ddd' },
+  navItem: { alignItems: 'center' },
+  navText: { fontSize: 16, color: '#666' },
+  navTextActive: { color: '#D32F2F', fontWeight: 'bold' }
 });
