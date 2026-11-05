@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { detectFraudApi } from '../services/api';
+import { detectFraudApi, alertFamilyApi } from '../services/api'; 
 
 export default function DetectScreen({ onFreeze }: { onFreeze: () => void }) {
   const [inputText, setInputText] = useState('');
@@ -12,6 +12,7 @@ export default function DetectScreen({ onFreeze }: { onFreeze: () => void }) {
     setLoading(true);
     try {
       const data = await detectFraudApi(inputText);
+      
       if (data.risk_level === 'high') {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         Alert.alert(
@@ -19,11 +20,20 @@ export default function DetectScreen({ onFreeze }: { onFreeze: () => void }) {
           `识别类型：${data.scam_type}\n建议操作：${data.suggestion}\n\n是否立刻冻结账户？`,
           [
             { text: "取消", style: "cancel" },
-            { text: "一键冻结", style: "destructive", onPress: () => {
-                onFreeze();
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-                Alert.alert("🛡️ 已冻结", "资金已保护，已自动通知您的家属。");
-            }}
+            { 
+              text: "一键冻结", 
+              style: "destructive", 
+              // 注意这里是 async
+              onPress: async () => {
+                onFreeze(); // 冻结前端状态
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); // 重度震动
+                
+                // 调用后端发邮件
+                await alertFamilyApi(inputText, data.scam_type);
+                
+                Alert.alert("🛡️ 已冻结", "资金已保护，已自动发送预警邮件通知您的家属。");
+              }
+            }
           ]
         );
       } else {
@@ -40,7 +50,13 @@ export default function DetectScreen({ onFreeze }: { onFreeze: () => void }) {
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>AI 异常交易检测</Text>
-      <TextInput style={styles.input} placeholder="请粘贴可疑聊天记录或转账附言" multiline value={inputText} onChangeText={setInputText} />
+      <TextInput 
+        style={styles.input} 
+        placeholder="请粘贴可疑聊天记录或转账附言" 
+        multiline 
+        value={inputText} 
+        onChangeText={setInputText} 
+      />
       <Pressable style={styles.actionBtn} onPress={checkFraud} disabled={loading}>
         {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>开始 AI 检测</Text>}
       </Pressable>
