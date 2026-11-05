@@ -1,4 +1,4 @@
-export const BASE_URL = 'http://172.20.10.3:8000'; // 记得改成你的 IP
+export const BASE_URL = 'http://172.20.10.3:8000'; 
 
 export const detectFraudApi = async (text: string) => {
   const response = await fetch(`${BASE_URL}/api/detect`, {
