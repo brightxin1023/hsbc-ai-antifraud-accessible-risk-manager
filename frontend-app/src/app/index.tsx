@@ -11,10 +11,6 @@ import EduScreen from '../screens/EduScreen';
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userPhone, setUserPhone] = useState('');
-  
-  // 💡 模拟本地数据库：保存已注册的用户
-  const [registeredUsers, setRegisteredUsers] = useState<{ phone: string, password: string }[]>([]);
-  
   const [currentPage, setCurrentPage] = useState('home');
   const [isFrozen, setIsFrozen] = useState(false);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
@@ -35,11 +31,12 @@ export default function App() {
   if (!isLoggedIn) {
     return (
       <SafeAreaView style={styles.container}>
-        {/* 把数据库和更新函数传给登录页 */}
+        {/* 🚀 极简传参：只传一个登录成功的回调，不需要再传前端数组了 */}
         <LoginScreen 
-          registeredUsers={registeredUsers}
-          setRegisteredUsers={setRegisteredUsers}
-          onLogin={(phone: React.SetStateAction<string>) => { setUserPhone(phone); setIsLoggedIn(true); }} 
+          onLogin={(phone: string) => { 
+            setUserPhone(phone); 
+            setIsLoggedIn(true); 
+          }} 
         />
       </SafeAreaView>
     );

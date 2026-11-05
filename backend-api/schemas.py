@@ -9,3 +9,11 @@ class Question(BaseModel):
 class AlertRequest(BaseModel):
     text: str
     scam_type: str
+
+class RegisterRequest(BaseModel):
+    phone: str
+    password: str
+
+class LoginRequest(BaseModel):
+    phone: str
+    password: str

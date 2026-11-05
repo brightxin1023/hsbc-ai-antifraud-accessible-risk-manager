@@ -26,3 +26,25 @@ export const alertFamilyApi = async (text: string, scam_type: string) => {
   });
   return response.json();
 };
+
+export const registerApi = async (phone: string, password: string) => {
+  const response = await fetch(`${BASE_URL}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, password }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "注册失败");
+  return data;
+};
+
+export const loginApi = async (phone: string, password: string) => {
+  const response = await fetch(`${BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, password }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "登录失败");
+  return data;
+};

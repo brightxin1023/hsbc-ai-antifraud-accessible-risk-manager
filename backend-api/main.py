@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import detect, qa, alert
+from routers import detect, qa, alert, auth
 
 app = FastAPI(title="AI 反诈盾后端 API")
 
@@ -19,3 +20,4 @@ def read_root():
 app.include_router(detect.router, prefix="/api", tags=["检测"])
 app.include_router(qa.router, prefix="/api", tags=["问答"])
 app.include_router(alert.router, prefix="/api", tags=["告警"])
+app.include_router(auth.router, prefix="/api/auth", tags=["鉴权"])
