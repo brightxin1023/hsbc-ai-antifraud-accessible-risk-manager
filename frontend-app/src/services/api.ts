@@ -48,3 +48,13 @@ export const loginApi = async (phone: string, password: string) => {
   if (!response.ok) throw new Error(data.detail || "登录失败");
   return data;
 };
+
+export const getVoiceHintApi = async (phone: string) => {
+  const response = await fetch(`${BASE_URL}/api/auth/voice_hint?phone=${phone}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "获取语音提示失败");
+  return data; // 返回 { hint: "20__" }
+};
