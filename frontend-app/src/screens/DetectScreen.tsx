@@ -14,7 +14,9 @@ export default function DetectScreen({ onFreeze }: { onFreeze: () => void }) {
       const data = await detectFraudApi(inputText);
       
       if (data.risk_level === 'high') {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        // 修改1：去掉 await，加上 .catch(() => {}) 防止浏览器报错阻断流程
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+        
         Alert.alert(
           "⚠️ 高危诈骗拦截", 
           `识别类型：${data.scam_type}\n建议操作：${data.suggestion}\n\n是否立刻冻结账户？`,
@@ -23,12 +25,11 @@ export default function DetectScreen({ onFreeze }: { onFreeze: () => void }) {
             { 
               text: "一键冻结", 
               style: "destructive", 
-              // 注意这里是 async
               onPress: async () => {
-                onFreeze(); // 冻结前端状态
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); // 重度震动
+                onFreeze(); 
+                // 修改2：同样加上防报错
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
                 
-                // 调用后端发邮件
                 await alertFamilyApi(inputText, data.scam_type);
                 
                 Alert.alert("🛡️ 已冻结", "资金已保护，已自动发送预警邮件通知您的家属。");
@@ -37,7 +38,8 @@ export default function DetectScreen({ onFreeze }: { onFreeze: () => void }) {
           ]
         );
       } else {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        // 修改3：同样加上防报错
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         Alert.alert("✅ 交易安全", "未发现明显诈骗特征");
       }
     } catch (error) {
