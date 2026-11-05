@@ -1,48 +1,72 @@
-// src/screens/LoginScreen.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, Alert, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
-export default function LoginScreen({ onLogin }: { onLogin: () => void }) {
-  const handleLogin = () => {
-    Keyboard.dismiss(); // 登录时顺手收起键盘
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onLogin();
-    Alert.alert("✅ 绑定成功", "已通过无障碍安全验证，绑定尾号 8888 储蓄卡。");
+export default function LoginScreen({ onLogin, registeredUsers, setRegisteredUsers }: any) {
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleAuth = () => {
+    Keyboard.dismiss();
+    
+    if (phone.length !== 11) return Alert.alert("提示", "请输入正确的 11 位手机号");
+    if (password.length < 6) return Alert.alert("提示", "密码长度不能少于 6 位");
+
+    if (!isLoginMode) {
+      // 💡 注册逻辑
+      if (password !== confirmPassword) return Alert.alert("提示", "两次输入的密码不一致");
+      const userExists = registeredUsers.find((u: any) => u.phone === phone);
+      if (userExists) return Alert.alert("提示", "该手机号已注册，请直接登录");
+
+      // 将新用户存入模拟数据库
+      setRegisteredUsers([...registeredUsers, { phone, password }]);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert("✅ 注册成功", "请使用刚刚的密码进行登录", [
+        { text: "去登录", onPress: () => { setIsLoginMode(true); setPassword(''); setConfirmPassword(''); } }
+      ]);
+    } else {
+      // 💡 登录逻辑
+      const user = registeredUsers.find((u: any) => u.phone === phone && u.password === password);
+      if (!user) return Alert.alert("登录失败", "账号未注册或密码错误，请先注册！");
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      onLogin(phone);
+    }
   };
 
   return (
-    // 1. 用 TouchableWithoutFeedback 包裹，实现点击空白处收起键盘
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      {/* 2. 用 KeyboardAvoidingView 防止键盘遮挡底部按钮 */}
-      <KeyboardAvoidingView 
-        style={styles.container} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        {/* 3. 用 ScrollView 保证小屏幕手机也能滑动查看 */}
+      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <Text style={styles.title} accessibilityRole="header">欢迎使用 AI 反诈盾</Text>
-          <Text style={styles.subtitle}>请绑定您的银行卡以开启保护</Text>
           
+          <Text style={styles.title}>{isLoginMode ? '欢迎回来' : '创建新账户'}</Text>
+          <Text style={styles.subtitle}>AI 反诈盾，守护您的资金安全</Text>
+
           <View style={styles.card}>
-            <Text style={styles.label} accessibilityLabel="请输入手机号或卡号后四位">请输入手机号或卡号后四位</Text>
-            <TextInput 
-              style={styles.input} 
-              placeholder="例如：8888" 
-              keyboardType="number-pad" 
-              accessibilityLabel="卡号输入框"
-              maxLength={4}
-            />
-            <Text style={styles.label} accessibilityLabel="无障碍安全验证">无障碍安全验证（无需滑块或人脸）</Text>
-            
-            <Pressable style={styles.voiceBtn} onPress={() => Alert.alert("🎙️ 语音验证", "请跟读屏幕上的数字：3 8 5 1")} accessibilityLabel="点击进行语音跟读验证">
-              <Text style={styles.voiceText}>🎙️ 语音跟读验证</Text>
+            <Text style={styles.label}>手机号</Text>
+            <TextInput style={styles.input} placeholder="请输入 11 位手机号" keyboardType="phone-pad" maxLength={11} value={phone} onChangeText={setPhone} />
+
+            <Text style={styles.label}>密码</Text>
+            <TextInput style={styles.input} placeholder="请输入 6-16 位密码" secureTextEntry={true} value={password} onChangeText={setPassword} />
+
+            {!isLoginMode && (
+              <>
+                <Text style={styles.label}>确认密码</Text>
+                <TextInput style={styles.input} placeholder="请再次输入密码" secureTextEntry={true} value={confirmPassword} onChangeText={setConfirmPassword} />
+              </>
+            )}
+
+            <Pressable style={styles.actionBtn} onPress={handleAuth}>
+              <Text style={styles.actionBtnText}>{isLoginMode ? '一键安全登录' : '立即注册并绑定'}</Text>
             </Pressable>
 
-            <Pressable style={styles.loginBtn} onPress={handleLogin} accessibilityRole="button" accessibilityLabel="一键安全登录并绑定">
-              <Text style={styles.loginBtnText}>一键安全登录并绑定</Text>
+            <Pressable style={styles.switchBtn} onPress={() => setIsLoginMode(!isLoginMode)}>
+              <Text style={styles.switchText}>{isLoginMode ? "还没有账户？去注册" : "已有账户？去登录"}</Text>
             </Pressable>
           </View>
+
         </ScrollView>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
@@ -51,14 +75,14 @@ export default function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
-  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 20 }, // flexGrow:1 保证内容居中
-  title: { fontSize: 32, fontWeight: 'bold', color: '#2E7D32', textAlign: 'center', marginBottom: 10 },
-  subtitle: { fontSize: 18, color: '#666', textAlign: 'center', marginBottom: 40 },
-  card: { backgroundColor: 'white', padding: 25, borderRadius: 15, elevation: 3 },
-  label: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: '#333' },
-  input: { borderWidth: 2, borderColor: '#ccc', borderRadius: 8, padding: 15, fontSize: 24, marginBottom: 25, textAlign: 'center', letterSpacing: 5 },
-  voiceBtn: { backgroundColor: '#E3F2FD', padding: 15, borderRadius: 10, alignItems: 'center', marginBottom: 20 },
-  voiceText: { color: '#1976D2', fontSize: 18, fontWeight: 'bold' },
-  loginBtn: { backgroundColor: '#D32F2F', padding: 18, borderRadius: 10, alignItems: 'center' },
-  loginBtnText: { color: 'white', fontSize: 20, fontWeight: 'bold' },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 20 },
+  title: { fontSize: 32, fontWeight: 'bold', color: '#2E7D32', textAlign: 'center', marginBottom: 5 },
+  subtitle: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 30 },
+  card: { backgroundColor: 'white', padding: 25, borderRadius: 16, elevation: 4 },
+  label: { fontSize: 16, fontWeight: 'bold', marginBottom: 8, color: '#333' },
+  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 15, fontSize: 18, marginBottom: 20, backgroundColor: '#fafafa' },
+  actionBtn: { backgroundColor: '#D32F2F', padding: 18, borderRadius: 10, alignItems: 'center', marginBottom: 15 },
+  actionBtnText: { color: 'white', fontSize: 20, fontWeight: 'bold' },
+  switchBtn: { alignItems: 'center', paddingVertical: 10 },
+  switchText: { color: '#1976D2', fontSize: 16 }
 });
