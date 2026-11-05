@@ -46,3 +46,24 @@ def login(request: LoginRequest):
             return {"status": "success", "message": "登录成功"}
             
     raise HTTPException(status_code=401, detail="密码错误，请重试")
+
+@router.get("/voice_hint")
+def get_voice_hint(phone: str):
+    users = read_users()
+    for u in users:
+        if u["phone"] == phone:
+            pwd = u["password"]
+            # 提取密码后四位，如果不足四位就全取
+            last_four = pwd[-4:] if len(pwd) >= 4 else pwd
+            
+            # 构造掩码（比如 "2003" 变成 "20__"）
+            if len(last_four) == 4:
+                hint = f"{last_four[:2]}__"
+            elif len(last_four) == 3:
+                hint = f"{last_four[:1]}__"
+            else:
+                hint = "__"
+                
+            return {"hint": hint}
+            
+    raise HTTPException(status_code=404, detail="该手机号未注册")
