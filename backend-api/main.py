@@ -1,10 +1,15 @@
 import os
 import json
+import smtplib
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI
 from dotenv import load_dotenv
+from email.utils import formataddr
+from email.mime.text import MIMEText
+from email.header import Header
+from fastapi import BackgroundTasks
 
 app = FastAPI()
 
@@ -114,3 +119,44 @@ def answer_question(question: Question):
         return {"answer": response.choices[0].message.content}
     except Exception as e:
         return {"answer": f"抱歉，系统繁忙，请稍后再试。错误信息: {str(e)}"}
+
+    # --- 家属协同告警功能 ---
+
+def send_alert_email(user_text: str, scam_type: str):
+    """后台异步发送告警邮件的函数"""
+    sender = os.getenv("MAIL_SENDER")
+    auth_code = os.getenv("MAIL_AUTH_CODE")
+    
+    if not sender or not auth_code:
+        print("⚠️ 未配置邮箱环境变量，跳过发送。")
+        return
+        
+    receiver = sender # 演示阶段，发给自己的邮箱测试
+    
+    # 构建邮件内容
+    message = MIMEText(f"【AI反诈盾紧急预警】\n\n您的家属可能正在遭遇诈骗！\n\n可疑文本：{user_text}\n识别类型：{scam_type}\n\n系统已自动拦截可疑交易，请立刻联系家人确认安全！", 'plain', 'utf-8')
+    message['From'] = formataddr(("AI反诈盾智能管家", sender))
+    message['To'] = formataddr(("家属", receiver))
+    message['Subject'] = Header("⚠️【高危拦截】您的家属可能正在遭遇诈骗", 'utf-8')
+
+    try:
+        # 连接 QQ 邮箱 SMTP 服务器
+        smtp_obj = smtplib.SMTP_SSL("smtp.qq.com", 465)
+        smtp_obj.login(sender, auth_code)
+        smtp_obj.sendmail(sender, [receiver], message.as_string())
+        smtp_obj.quit()
+        print(f"✅ 告警邮件已成功发送至家属: {receiver}")
+    except Exception as e:
+        print(f"❌ 邮件发送失败: {e}")
+
+
+class AlertRequest(BaseModel):
+    text: str
+    scam_type: str
+
+@app.post("/api/alert/family")
+def alert_family(request: AlertRequest, background_tasks: BackgroundTasks):
+    """一键通知家属接口"""
+    # 使用 background_tasks，不阻塞前端响应（前端瞬间返回，邮件在后台慢慢发）
+    background_tasks.add_task(send_alert_email, request.text, request.scam_type)
+    return {"status": "success", "message": "已通知家属"}
