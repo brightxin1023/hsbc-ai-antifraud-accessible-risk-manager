@@ -153,18 +153,18 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction }:
         [
           { text: "稍后处理", style: "cancel" },
           { 
-            text: "📞 呼叫客服申诉解冻", 
+            text: "📞 呼叫人工客服申诉解冻", 
             onPress: () => {
               // 🚀 修复：先弹接通，确认后再解冻，避免弹窗阻塞叠加
               Alert.alert(
                 "📞 正在接通",
-                "正在为您转接反诈专属客服...",
+                "正在为您转接反诈专属人工客服...",
                 [
                   {
                     text: "OK",
                     onPress: () => {
                       onUnfreeze(); // 直接解除全局冻结状态
-                      Alert.alert("✅ 解冻成功", "客服已为您核实身份，账户已恢复正常使用。请警惕陌生转账！");
+                      Alert.alert("✅ 解冻成功", "人工客服已为您核实身份，账户已恢复正常使用。请警惕陌生转账！");
                     }
                   }
                 ]

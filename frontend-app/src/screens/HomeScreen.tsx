@@ -19,23 +19,43 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       [
         { text: "取消", style: "cancel" },
         { 
-          text: "📞 一键呼叫客服", 
+          text: "📞 一键呼叫人工客服", 
           onPress: () => {
-            // 🚀 修复：改用嵌套弹窗。点击“OK”后再解冻，彻底告别 setTimeout 导致的重叠 Bug
             Alert.alert(
               "📞 正在接通", 
-              "正在为您转接反诈专属客服...",
+              "正在为您转接反诈专属人工客服...",
               [
                 { 
                   text: "OK", 
                   onPress: () => {
-                    onUnfreeze(); // 🚀 状态置为 false，首页红框消失
-                    Alert.alert("✅ 解冻成功", "客服已为您核实身份，账户已恢复正常使用。请警惕陌生转账！");
+                    onUnfreeze(); 
+                    Alert.alert("✅ 解冻成功", "人工客服已为您核实身份，账户已恢复正常使用。请警惕陌生转账！");
                   } 
                 }
               ]
             );
           } 
+        }
+      ]
+    );
+  };
+
+  // 🚀 优化：全场景包容的人工客服呼叫弹窗
+  const handleSOSCall = () => {
+    Alert.alert(
+      "📞 联系人工客服",
+      "无论您是不懂操作、遇到账户异常，还是怀疑遭遇了诈骗，都可以随时联系我们的专属人工客服。是否现在呼叫？",
+      [
+        { text: "取消", style: "cancel" },
+        { 
+          text: "立即呼叫", 
+          onPress: () => {
+            Alert.alert(
+              "📞 正在接通",
+              "正在为您转接专属人工客服，请稍候...",
+              [{ text: "OK" }]
+            );
+          }
         }
       ]
     );
@@ -55,7 +75,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
             检测到高危风险，资金已自动拦截。保护期间，您的工资入账及日常水电费自动扣款均不受影响。
           </Text>
           <Pressable style={styles.appealBtn} onPress={handleAppeal}>
-            <Text style={styles.appealBtnText}>📞 呼叫客服申诉解冻</Text>
+            <Text style={styles.appealBtnText}>📞 呼叫人工客服申诉解冻</Text>
           </Pressable>
         </View>
       )}
@@ -152,9 +172,11 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       </View>
 
       <View style={styles.serviceBox}>
-        <Text style={styles.serviceText}>遇到不明扣款或疑似诈骗？</Text>
-        <Pressable style={styles.sosButton} onPress={() => Alert.alert("📞 人工协助", "正在为您转接专属反诈客服...")}>
-          <Text style={styles.buttonText}>📞 一键呼叫人工协助</Text>
+        {/* 🚀 优化：包容万象的提问 */}
+        <Text style={styles.serviceText}>遇到操作疑问、账户异常或其他资金问题？</Text>
+        <Pressable style={styles.sosButton} onPress={handleSOSCall}>
+          {/* 🚀 优化：更标准的表述 */}
+          <Text style={styles.buttonText}>📞 呼叫人工客服</Text>
         </Pressable>
       </View>
     </ScrollView>
