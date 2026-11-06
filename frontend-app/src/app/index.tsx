@@ -17,7 +17,7 @@ export default function App() {
 
   // 🚀 全局流水账本
   const [transactions, setTransactions] = useState<any[]>([
-    { id: 1, title: '转账 - 某某科技有限公司', time: '今天 10:24', amount: '- ¥ 8,000.00', isExpense: true, isAbnormal: isFrozen },
+    { id: 1, title: '转账 - 某某科技有限公司', time: '今天 10:24', amount: '- ¥ 8,000.00', isExpense: true, isAbnormal: false },
     { id: 2, title: '游戏充值 - 某某游戏平台', time: '今天 09:15', amount: '- ¥ 328.00', isExpense: true, isAbnormal: true },
     { id: 3, title: '收款 - 工资入账', time: '昨天 15:30', amount: '+ ¥ 12,500.00', isExpense: false, isAbnormal: false },
     { id: 4, title: '外卖 - 某某餐饮', time: '昨天 12:10', amount: '- ¥ 35.50', isExpense: true, isAbnormal: false },
@@ -51,8 +51,26 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {currentPage === 'home' && <HomeScreen isFrozen={isFrozen} userPhone={userPhone} onLogout={handleLogout} transactions={transactions} />}
-      {currentPage === 'transfer' && <TransferScreen onFreeze={() => setIsFrozen(true)} addTransaction={addTransaction} />}
+      {/* 🚀 首页：传入解冻方法，供申诉使用 */}
+      {currentPage === 'home' && (
+        <HomeScreen 
+          isFrozen={isFrozen} 
+          userPhone={userPhone} 
+          onLogout={handleLogout} 
+          transactions={transactions} 
+          onUnfreeze={() => setIsFrozen(false)} 
+        />
+      )}
+      
+      {/* 🚀 转账页：必须同时传入冻结和解冻方法，供弹窗内的申诉使用 */}
+      {currentPage === 'transfer' && (
+        <TransferScreen 
+          onFreeze={() => setIsFrozen(true)} 
+          onUnfreeze={() => setIsFrozen(false)} // 👈 刚才漏掉的就是这一行
+          addTransaction={addTransaction} 
+        />
+      )}
+      
       {currentPage === 'qa' && <QAScreen />}
       {currentPage === 'edu' && <EduScreen />}
       

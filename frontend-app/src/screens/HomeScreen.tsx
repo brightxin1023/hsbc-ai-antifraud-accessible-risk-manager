@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, View, Text, Pressable, Alert, StyleSheet } from 'react-native';
 
-export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions }: any) {
+export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions, onUnfreeze }: any) {
   const maskedPhone = userPhone ? `${userPhone.substring(0, 3)}****${userPhone.substring(7)}` : '';
   const cardTail = userPhone ? userPhone.substring(7) : '8888';
 
@@ -12,9 +12,54 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
     ]);
   };
 
+  const handleAppeal = () => {
+    Alert.alert(
+      "解除冻结（申诉）", 
+      "为了保护您的资金安全，当前账户已限制出账。如需解冻，请呼叫人工客服核实身份。",
+      [
+        { text: "取消", style: "cancel" },
+        { 
+          text: "📞 一键呼叫客服", 
+          onPress: () => {
+            // 🚀 修复：改用嵌套弹窗。点击“OK”后再解冻，彻底告别 setTimeout 导致的重叠 Bug
+            Alert.alert(
+              "📞 正在接通", 
+              "正在为您转接反诈专属客服...",
+              [
+                { 
+                  text: "OK", 
+                  onPress: () => {
+                    onUnfreeze(); // 🚀 状态置为 false，首页红框消失
+                    Alert.alert("✅ 解冻成功", "客服已为您核实身份，账户已恢复正常使用。请警惕陌生转账！");
+                  } 
+                }
+              ]
+            );
+          } 
+        }
+      ]
+    );
+  };
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
       
+      {/* 🚀 只有 isFrozen 为 true 时，才展示这个红框 */}
+      {isFrozen && (
+        <View style={styles.frozenBanner}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <Text style={{ fontSize: 20, marginRight: 8 }}>🛡️</Text>
+            <Text style={styles.frozenBannerTitle}>账户已进入安全保护状态</Text>
+          </View>
+          <Text style={styles.frozenBannerText}>
+            检测到高危风险，资金已自动拦截。保护期间，您的工资入账及日常水电费自动扣款均不受影响。
+          </Text>
+          <Pressable style={styles.appealBtn} onPress={handleAppeal}>
+            <Text style={styles.appealBtnText}>📞 呼叫客服申诉解冻</Text>
+          </Pressable>
+        </View>
+      )}
+
       <View style={styles.headerCard}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <View>
@@ -32,7 +77,6 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       
       <View style={styles.listContainer}>
         {transactions.map((tx: any, index: number) => {
-          // 🚀 无障碍播报：统一为交易/拦截口径
           let accessibilityStatus = '安全交易。';
           if (tx.isAbnormal) accessibilityStatus = '状态异常，资金已拦截。';
           else if (tx.isRisk === 'high') accessibilityStatus = '高危交易，已汇出。';
@@ -78,8 +122,6 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
               </View>
               
               <View style={styles.amountContainer}>
-                
-                {/* 纯几何图形绘制符号，彻底解决字体粗细不一的问题 */}
                 {isExpense ? (
                   <View style={[styles.customMinusSign, tx.isAbnormal && { backgroundColor: '#999' }]} />
                 ) : (
@@ -121,6 +163,14 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, backgroundColor: '#f0f2f5' },
+  
+  // 🚀 冻结横幅样式
+  frozenBanner: { backgroundColor: '#FFEBEE', padding: 20, borderRadius: 12, borderWidth: 2, borderColor: '#D32F2F', marginBottom: 20 },
+  frozenBannerTitle: { color: '#D32F2F', fontSize: 18, fontWeight: 'bold' },
+  frozenBannerText: { color: '#B71C1C', fontSize: 14, lineHeight: 22, marginBottom: 15 },
+  appealBtn: { backgroundColor: '#D32F2F', padding: 12, borderRadius: 8, alignItems: 'center' },
+  appealBtnText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
+
   headerCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 12, marginBottom: 25, elevation: 4 },
   headerTitle: { color: 'white', fontSize: 20, fontWeight: 'bold' },
   headerSubtitle: { color: 'white', fontSize: 15, marginTop: 5, opacity: 0.9 },
@@ -142,8 +192,7 @@ const styles = StyleSheet.create({
   amountTextWrapper: { position: 'relative', justifyContent: 'center', height: 24 },
   txAmount: { fontSize: 18, fontWeight: 'bold', lineHeight: 24 },
   redStrikethrough: { position: 'absolute', left: -2, right: -2, height: 1.5, backgroundColor: '#FF3B30', top: 11.25 },
-
-  // 标签样式
+  
   badgeError: { backgroundColor: '#FFEBEE', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: '#FFCDD2', marginLeft: 8 },
   badgeErrorText: { fontSize: 12, color: '#D32F2F', fontWeight: 'bold' },
   badgeHighRisk: { backgroundColor: '#D32F2F', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 8 },
