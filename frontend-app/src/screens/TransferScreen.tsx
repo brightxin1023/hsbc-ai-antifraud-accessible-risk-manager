@@ -36,14 +36,12 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
 
     setLoading(true);
     try {
-      // 🚀 1. 提取前端硬性风控特征
       const isLargeAmount = parseFloat(amount) > 5000;
       const isMissingNote = !note;
       
       const combinedText = `收款人户名：${payee}，收款账号：${cardNo}，转账金额：${amount}元，转账附言：${note || '无'}`;
       const data = await detectFraudApi(combinedText);
       
-      // 🚀 2. 前端硬规则覆盖：优先级高于大模型，只要触发了大额/无附言，且不是高危，强制拉高中危
       let finalResult = { ...data };
       
       if (isLargeAmount || isMissingNote) {
@@ -51,13 +49,17 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
           finalResult.risk_level = 'medium';
           finalResult.scam_type = '行为风控异常';
           
-          // 动态拼接触发原因，让提示更精准
           let reasons = [];
           if (isLargeAmount) reasons.push('大额');
           if (isMissingNote) reasons.push('无附言');
           
-          finalResult.suggestion = `检测到${reasons.join('且')}转账，存在潜在风险，请务必核实收款人身份，或添加转账附言。`;
+          finalResult.suggestion = `检测到${reasons.join('且')}转账，存在潜在风险，请务必核实收款人身份。`;
         }
+      }
+
+      // 🚀 修复：如果是低危且无特定类型，直接展示“低风险”
+      if (finalResult.risk_level === 'low' && (!finalResult.scam_type || finalResult.scam_type === '无')) {
+        finalResult.scam_type = '低风险';
       }
 
       setResultData(finalResult);
@@ -77,10 +79,10 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
     }
   };
 
-  // 🚀 强制转账：如果高危依然强行转账，也通知家属！
   const executeTransfer = async (isForced: boolean) => {
     setModalVisible(false);
     
+    // 🚀 修复：无论是正常转账还是强制转账，都把 risk_level 传下去（正常转账为 'low'）
     addTransaction({
       id: Date.now(),
       title: `转账 - ${payee}`,
@@ -88,12 +90,10 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
       amount: `- ¥ ${parseFloat(amount).toFixed(2)}`,
       isExpense: true,
       isAbnormal: false,
-      // 🚀 传递具体的风险等级，用于首页区分标签
-      isRisk: isForced ? resultData?.risk_level : false, 
+      isRisk: resultData?.risk_level, 
     });
 
     if (isForced) {
-      // 只有高危强制转账，才偷偷发邮件
       if (resultData?.risk_level === 'high') {
         await alertFamilyApi(note || '高危强制转账', resultData.scam_type);
         Alert.alert("✅ 转账成功", "款项已汇出。系统已记录此笔高危交易，并已同步通知您的家属，请注意资金安全。");
@@ -107,7 +107,6 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
     setPayee(''); setCardNo(''); setAmount(''); setNote('');
   };
 
-  // 🚀 阻断交易：只有高危才通知家属，中危不通知
   const handleCancelTransfer = async () => {
     setModalVisible(false);
     onFreeze();
@@ -133,9 +132,9 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
 
   const getModalStyle = () => {
     if (resultData?.risk_level === 'high') {
-      return { bg: '#D32F2F', text: 'white', icon: '🚨', title: '高危诈骗拦截', btn1: '无视风险强制转账', btn2: '阻断交易并冻结', btn2Bg: '#B71C1C' };
+      return { bg: '#D32F2F', text: 'white', icon: '🚨', title: '高风险诈骗拦截', btn1: '无视风险强制转账', btn2: '阻断交易并冻结', btn2Bg: '#B71C1C' };
     } else if (resultData?.risk_level === 'medium') {
-      return { bg: '#FFC107', text: '#333', icon: '⚠️', title: '疑似风险提醒', btn1: '无视提醒继续转账', btn2: '暂停转账，核实身份', btn2Bg: '#F57F17' };
+      return { bg: '#FFC107', text: '#333', icon: '⚠️', title: '中风险风险提醒', btn1: '无视提醒继续转账', btn2: '暂停转账，核实身份', btn2Bg: '#F57F17' };
     } else {
       return { bg: '#2E7D32', text: 'white', icon: '✅', title: '交易环境安全', btn1: '', btn2: '', btn2Bg: '' };
     }
@@ -212,10 +211,9 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
                 </>
               ) : (
                 <Pressable 
-                  style={[styles.modalBtn, { backgroundColor: '#1B8A2E' }]} // 🚀 深绿色底色，绝对显眼
+                  style={[styles.modalBtn, { backgroundColor: '#1B8A2E' }]}
                   onPress={() => executeTransfer(false)}
                 >
-                  {/* 🚀 硬编码纯白文字，绝对不可能隐身 */}
                   <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>确认转账</Text>
                 </Pressable>
               )}
@@ -247,7 +245,7 @@ const styles = StyleSheet.create({
   modalIcon: { fontSize: 60, marginBottom: 10 },
   modalTitle: { fontSize: 28, fontWeight: 'bold', marginBottom: 20 },
   modalInfoBox: { flexDirection: 'row', marginBottom: 12, width: '100%', alignItems: 'flex-start' },
-  modalLabel: { fontSize: 18, fontWeight: 'bold', width: 90 },
+  modalLabel: { fontSize: 18, fontWeight: 'bold', width: 95, lineHeight: 26, marginTop: 1 }, 
   modalValue: { fontSize: 18, fontWeight: 'bold', flex: 1, lineHeight: 26 },
   modalButtons: { flexDirection: 'column', gap: 10, marginTop: 20, width: '100%' },
   modalBtn: { paddingVertical: 16, borderRadius: 12, alignItems: 'center' },

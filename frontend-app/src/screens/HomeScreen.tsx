@@ -32,54 +32,81 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       
       <View style={styles.listContainer}>
         {transactions.map((tx: any, index: number) => {
-          // 提前计算好当前交易的状态文案，供读屏软件使用
-          let accessibilityStatus = '状态正常。';
+          let accessibilityStatus = '状态正常，低风险。';
           if (tx.isAbnormal) accessibilityStatus = '状态异常，资金已拦截。';
-          else if (tx.isRisk === 'high') accessibilityStatus = '高危风险交易，已汇出。';
+          else if (tx.isRisk === 'high') accessibilityStatus = '高度风险交易，已汇出。';
           else if (tx.isRisk === 'medium') accessibilityStatus = '疑似风险交易，已汇出。';
+
+          const rawAmount = tx.amount || '';
+          const isExpense = tx.isExpense;
+          const cleanAmount = rawAmount.replace(/^[-+]\s*/, ''); 
 
           return (
             <View 
               key={tx.id} 
               style={[styles.listItem, index !== transactions.length - 1 && styles.listItemBorder]}
               accessible={true}
-              accessibilityLabel={`${tx.title}，时间${tx.time}，金额${tx.amount}。${accessibilityStatus}`}
+              accessibilityLabel={`${tx.title}，时间${tx.time}，金额${isExpense ? '减' : '加'}${cleanAmount}。${accessibilityStatus}`}
             >
               <View style={styles.txLeft}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
                   <Text style={styles.txTitle}>{tx.title}</Text>
                   
-                  {/* 🚨 异常拦截标签（资金没转出） */}
                   {tx.isAbnormal && (
                     <View style={styles.badgeError}>
-                      <Text style={styles.badgeErrorText}>🚨 异常拦截</Text>
+                      <Text style={styles.badgeErrorText}>🛑 异常拦截</Text>
                     </View>
                   )}
-
-                  {/* 🚨 高危强制转出标签（深红） */}
                   {tx.isRisk === 'high' && !tx.isAbnormal && (
                     <View style={styles.badgeHighRisk}>
-                      <Text style={styles.badgeHighRiskText}>🚨 高危交易</Text>
+                      <Text style={styles.badgeHighRiskText}>🚨 高度风险</Text>
                     </View>
                   )}
-
-                  {/* ⚠️ 中危强制转出标签（黄色） */}
                   {tx.isRisk === 'medium' && !tx.isAbnormal && (
                     <View style={styles.badgeWarning}>
                       <Text style={styles.badgeWarningText}>⚠️ 疑似风险</Text>
+                    </View>
+                  )}
+                  {(!tx.isRisk || tx.isRisk === 'low') && !tx.isAbnormal && (
+                    <View style={styles.badgeLowRisk}>
+                      <Text style={styles.badgeLowRiskText}>✅ 低风险</Text>
                     </View>
                   )}
                 </View>
                 <Text style={styles.txTime}>{tx.time}</Text>
               </View>
               
-              <Text style={[
-                styles.txAmount, 
-                tx.isExpense ? { color: '#333' } : { color: '#2E7D32' }, 
-                tx.isAbnormal && { textDecorationLine: 'line-through', color: '#999' } // 只有被拦截才划线变灰
-              ]}>
-                {tx.amount}
-              </Text>
+              <View style={styles.amountContainer}>
+                
+                {/* 🚀 纯几何图形绘制符号，彻底解决字体粗细不一的问题 */}
+                {isExpense ? (
+                  // 减号：长度 12，粗细 2
+                  <View style={[styles.customMinusSign, tx.isAbnormal && { backgroundColor: '#999' }]} />
+                ) : (
+                  // 加号：外包 12x12 容器，里面横竖交叉，横线长度和粗细与减号绝对一致
+                  <View style={styles.customPlusWrapper}>
+                    <View style={styles.plusHorizontal} />
+                    <View style={styles.plusVertical} />
+                  </View>
+                )}
+                
+                {/* 数字与删除线 */}
+                <View style={styles.amountTextWrapper}>
+                  <Text style={[
+                    styles.txAmount, 
+                    isExpense ? { color: '#333' } : { color: '#4CAF50' }, 
+                    tx.isAbnormal && { color: '#999' }
+                  ]}>
+                    {cleanAmount}
+                  </Text>
+                  
+                  {/* 异常拦截的鲜艳红线，绝对居中 */}
+                  {tx.isAbnormal && (
+                    <View style={styles.redStrikethrough} />
+                  )}
+                </View>
+              </View>
+
             </View>
           );
         })}
@@ -87,11 +114,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
 
       <View style={styles.serviceBox}>
         <Text style={styles.serviceText}>遇到不明扣款或疑似诈骗？</Text>
-        <Pressable 
-          style={styles.sosButton} 
-          onPress={() => Alert.alert("📞 人工协助", "正在为您转接专属反诈客服...")}
-          accessibilityLabel="一键呼叫人工协助，转接专属反诈客服"
-        >
+        <Pressable style={styles.sosButton} onPress={() => Alert.alert("📞 人工协助", "正在为您转接专属反诈客服...")}>
           <Text style={styles.buttonText}>📞 一键呼叫人工协助</Text>
         </Pressable>
       </View>
@@ -113,19 +136,75 @@ const styles = StyleSheet.create({
   txLeft: { flex: 1 },
   txTitle: { fontSize: 16, fontWeight: '500', color: '#333', marginRight: 8 },
   txTime: { fontSize: 13, color: '#999', marginTop: 6 },
-  txAmount: { fontSize: 18, fontWeight: 'bold' },
   
-  // 🚨 红色拦截标签（资金未转出）
+  // 🚀 金额排版终极样式
+  amountContainer: { flexDirection: 'row', alignItems: 'center' },
+  
+  // 减号固定样式
+  customMinusSign: { 
+    width: 12, 
+    height: 2, 
+    backgroundColor: '#333', 
+    marginRight: 4, 
+    borderRadius: 1 
+  },
+  
+  // 加号容器，确保占位大小与减号一致
+  customPlusWrapper: {
+    width: 12,
+    height: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 4,
+  },
+  // 加号横线：和减号一模一样
+  plusHorizontal: {
+    position: 'absolute',
+    width: 12,
+    height: 2,
+    backgroundColor: '#4CAF50',
+    borderRadius: 1,
+  },
+  // 加号竖线：粗 2，长 12
+  plusVertical: {
+    position: 'absolute',
+    width: 2,
+    height: 12,
+    backgroundColor: '#4CAF50',
+    borderRadius: 1,
+  },
+  
+  // 文字容器锁高
+  amountTextWrapper: {
+    position: 'relative',
+    justifyContent: 'center',
+    height: 24, 
+  },
+  txAmount: { 
+    fontSize: 18, 
+    fontWeight: 'bold', 
+    lineHeight: 24 
+  },
+  
+  // 绝对居中的穿透红线
+  redStrikethrough: {
+    position: 'absolute',
+    left: -2,
+    right: -2,
+    height: 1.5,
+    backgroundColor: '#FF3B30',
+    top: 11.25, 
+  },
+
+  // --- 标签样式保持不变 ---
   badgeError: { backgroundColor: '#FFEBEE', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: '#FFCDD2', marginLeft: 8 },
   badgeErrorText: { fontSize: 12, color: '#D32F2F', fontWeight: 'bold' },
-  
-  // 🚨 深红色高危转出标签
-  badgeHighRisk: { backgroundColor: '#F44336', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 8 },
+  badgeHighRisk: { backgroundColor: '#D32F2F', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 8 },
   badgeHighRiskText: { fontSize: 12, color: '#FFFFFF', fontWeight: 'bold' },
-
-  // ⚠️ 黄色中危风险标签
   badgeWarning: { backgroundColor: '#FFF8E1', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: '#FFE082', marginLeft: 8 },
   badgeWarningText: { fontSize: 12, color: '#F57F17', fontWeight: 'bold' },
+  badgeLowRisk: { backgroundColor: '#E8F5E9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: '#A5D6A7', marginLeft: 8 },
+  badgeLowRiskText: { fontSize: 12, color: '#2E7D32', fontWeight: 'bold' },
 
   serviceBox: { backgroundColor: '#FFF3E0', padding: 20, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#FFE0B2' },
   serviceText: { fontSize: 15, color: '#E65100', marginBottom: 12, fontWeight: 'bold' },
