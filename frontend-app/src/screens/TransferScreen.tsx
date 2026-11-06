@@ -14,11 +14,40 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
   const [modalVisible, setModalVisible] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
 
+  // 🚀 自定义震动序列，让节奏感极其清晰
+  // 🚀 终极自定义震动序列，间距拉大，强度对比拉满
+  const triggerHaptic = (level: 'low' | 'medium' | 'high') => {
+    if (level === 'low') {
+      // 低风险：清脆的 1 下轻震
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    } else if (level === 'medium') {
+      // 中风险：2 连震（间隔 400ms，有明显停顿感）
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      setTimeout(() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      }, 400); 
+    } else if (level === 'high') {
+      // 高风险：3 连重震 + 最后追加系统报错级长震（绝对震撼）
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+      setTimeout(() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+      }, 300);
+      setTimeout(() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+      }, 600);
+      setTimeout(() => {
+        // 追加系统级 Error 长震动，彻底拉开与中风险的差距
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      }, 900);
+    }
+  };
+
   useEffect(() => {
     if (cardNo.length >= 8) {
       const banks = ['工商银行', '建设银行', '招商银行', '农业银行', '中国银行', '交通银行'];
       const randomBank = banks[parseInt(cardNo.slice(-1)) % banks.length];
       setBankInfo(`已识别为：${randomBank} 储蓄卡`);
+      // 输入完卡号，轻微震动一下即可
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     } else {
       setBankInfo('');
@@ -44,33 +73,43 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
       
       let finalResult = { ...data };
       
+      // 🚀 智能缝合逻辑
       if (isLargeAmount || isMissingNote) {
         if (finalResult.risk_level !== 'high') {
+          // 1. 备份 AI 的原始建议和等级
+          const aiSuggestion = finalResult.suggestion;
+          const aiRiskLevel = finalResult.risk_level;
+          
+          // 2. 触发前端硬规则覆盖
           finalResult.risk_level = 'medium';
           finalResult.scam_type = '行为风控异常';
           
+          // 3. 拼装触发原因
           let reasons = [];
           if (isLargeAmount) reasons.push('大额');
           if (isMissingNote) reasons.push('无附言');
-          
-          finalResult.suggestion = `检测到${reasons.join('且')}转账，存在潜在风险，请务必核实收款人身份。`;
+          const frontendReason = `检测到${reasons.join('且')}转账，存在潜在风险。`;
+
+          // 4. 合并建议话术
+          if (aiRiskLevel === 'medium') {
+            // 如果 AI 也觉得可疑，把 AI 的分析也拼接上
+            finalResult.suggestion = `${frontendReason} 此外，AI研判发现：${aiSuggestion}`;
+          } else {
+            // 如果 AI 觉得安全，明确告诉用户 AI 的判定结果
+            finalResult.suggestion = `${frontendReason} 系统对附言分析为低风险，但仍请您务必核实收款人身份。`;
+          }
         }
       }
 
-      // 🚀 修复：如果是低危且无特定类型，直接展示“低风险”
       if (finalResult.risk_level === 'low' && (!finalResult.scam_type || finalResult.scam_type === '无')) {
         finalResult.scam_type = '低风险';
       }
 
       setResultData(finalResult);
       
-      if (finalResult.risk_level === 'high') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-      } else if (finalResult.risk_level === 'medium') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-      } else {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      }
+      // 🚀 根据风险等级，调用自定义震动序列
+      triggerHaptic(finalResult.risk_level as 'high' | 'medium' | 'low');
+      
       setModalVisible(true);
     } catch (error) {
       Alert.alert("网络错误", "无法连接到后端服务");
@@ -82,7 +121,6 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
   const executeTransfer = async (isForced: boolean) => {
     setModalVisible(false);
     
-    // 🚀 修复：无论是正常转账还是强制转账，都把 risk_level 传下去（正常转账为 'low'）
     addTransaction({
       id: Date.now(),
       title: `转账 - ${payee}`,
@@ -98,7 +136,7 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
         await alertFamilyApi(note || '高危强制转账', resultData.scam_type);
         Alert.alert("✅ 转账成功", "款项已汇出。系统已记录此笔高危交易，并已同步通知您的家属，请注意资金安全。");
       } else {
-        Alert.alert("✅ 转账成功", "款项已汇出。系统已记录此笔风险交易。");
+        Alert.alert("✅ 转账成功", "款项已汇出。系统已记录此笔可疑交易。");
       }
     } else {
       Alert.alert("✅ 转账成功", "交易已安全完成，请注意查收。");
@@ -110,6 +148,7 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
   const handleCancelTransfer = async () => {
     setModalVisible(false);
     onFreeze();
+    // 🚀 阻断操作，配合一次极重的震动确认
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
     
     addTransaction({
@@ -132,9 +171,9 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
 
   const getModalStyle = () => {
     if (resultData?.risk_level === 'high') {
-      return { bg: '#D32F2F', text: 'white', icon: '🚨', title: '高风险诈骗拦截', btn1: '无视风险强制转账', btn2: '阻断交易并冻结', btn2Bg: '#B71C1C' };
+      return { bg: '#D32F2F', text: 'white', icon: '🚨', title: '高度风险警告', btn1: '无视风险强制转账', btn2: '阻断交易并冻结', btn2Bg: '#B71C1C' };
     } else if (resultData?.risk_level === 'medium') {
-      return { bg: '#FFC107', text: '#333', icon: '⚠️', title: '中风险风险提醒', btn1: '无视提醒继续转账', btn2: '暂停转账，核实身份', btn2Bg: '#F57F17' };
+      return { bg: '#FFC107', text: '#333', icon: '⚠️', title: '可疑交易提醒', btn1: '无视提醒继续转账', btn2: '暂停转账，核实身份', btn2Bg: '#F57F17' };
     } else {
       return { bg: '#2E7D32', text: 'white', icon: '✅', title: '交易环境安全', btn1: '', btn2: '', btn2Bg: '' };
     }
