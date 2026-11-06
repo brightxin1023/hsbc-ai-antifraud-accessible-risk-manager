@@ -7,8 +7,8 @@ export default function BottomNav({ currentPage, setCurrentPage }: any) {
       <Pressable onPress={() => setCurrentPage('home')} style={styles.navItem}>
         <Text style={[styles.navText, currentPage === 'home' && styles.navTextActive]}>🏠 首页</Text>
       </Pressable>
-      <Pressable onPress={() => setCurrentPage('detect')} style={styles.navItem}>
-        <Text style={[styles.navText, currentPage === 'detect' && styles.navTextActive]}>🛡️ 检测</Text>
+      <Pressable onPress={() => setCurrentPage('transfer')} style={styles.navItem}>
+        <Text style={[styles.navText, currentPage === 'transfer' && styles.navTextActive]}>💸 转账</Text>
       </Pressable>
       <Pressable onPress={() => setCurrentPage('qa')} style={styles.navItem}>
         <Text style={[styles.navText, currentPage === 'qa' && styles.navTextActive]}>💬 问答</Text>
