@@ -36,22 +36,35 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
 
     setLoading(true);
     try {
-      const isHighRiskAction = parseFloat(amount) > 5000 || !note;
+      // 🚀 1. 提取前端硬性风控特征
+      const isLargeAmount = parseFloat(amount) > 5000;
+      const isMissingNote = !note;
       
       const combinedText = `收款人户名：${payee}，收款账号：${cardNo}，转账金额：${amount}元，转账附言：${note || '无'}`;
       const data = await detectFraudApi(combinedText);
       
-      if (data.risk_level === 'low' && isHighRiskAction) {
-        data.risk_level = 'medium';
-        data.scam_type = '行为风控异常';
-        data.suggestion = '检测到大额或无附言转账，请务必核实收款人身份。';
+      // 🚀 2. 前端硬规则覆盖：优先级高于大模型，只要触发了大额/无附言，且不是高危，强制拉高中危
+      let finalResult = { ...data };
+      
+      if (isLargeAmount || isMissingNote) {
+        if (finalResult.risk_level !== 'high') {
+          finalResult.risk_level = 'medium';
+          finalResult.scam_type = '行为风控异常';
+          
+          // 动态拼接触发原因，让提示更精准
+          let reasons = [];
+          if (isLargeAmount) reasons.push('大额');
+          if (isMissingNote) reasons.push('无附言');
+          
+          finalResult.suggestion = `检测到${reasons.join('且')}转账，存在潜在风险，请务必核实收款人身份，或添加转账附言。`;
+        }
       }
 
-      setResultData(data);
+      setResultData(finalResult);
       
-      if (data.risk_level === 'high') {
+      if (finalResult.risk_level === 'high') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-      } else if (data.risk_level === 'medium') {
+      } else if (finalResult.risk_level === 'medium') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       } else {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -199,10 +212,10 @@ export default function TransferScreen({ onFreeze, addTransaction }: { onFreeze:
                 </>
               ) : (
                 <Pressable 
-                  style={[styles.modalBtn, { backgroundColor: '#1B8A2E' }]} // 🚀 修复：深绿色底色，绝对显眼
+                  style={[styles.modalBtn, { backgroundColor: '#1B8A2E' }]} // 🚀 深绿色底色，绝对显眼
                   onPress={() => executeTransfer(false)}
                 >
-                  {/* 🚀 修复：硬编码纯白文字，绝对不可能隐身 */}
+                  {/* 🚀 硬编码纯白文字，绝对不可能隐身 */}
                   <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>确认转账</Text>
                 </Pressable>
               )}
