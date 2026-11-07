@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Keyboard } from 'react-native';
+import { StyleSheet, Keyboard, View } from 'react-native'; // 新增引入了 View
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import LoginScreen from '../screens/LoginScreen';
@@ -16,7 +16,7 @@ export default function App() {
   const [isFrozen, setIsFrozen] = useState(false);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
-  // 🚀 全局流水账本
+  // 全局流水账本
   const [transactions, setTransactions] = useState<any[]>([
     { id: 1, title: '转账 - 某某科技有限公司', time: '今天 10:24', amount: '- ¥ 8,000.00', isExpense: true, isAbnormal: false },
     { id: 2, title: '游戏充值 - 某某游戏平台', time: '今天 09:15', amount: '- ¥ 328.00', isExpense: true, isAbnormal: true },
@@ -24,7 +24,7 @@ export default function App() {
     { id: 4, title: '外卖 - 某某餐饮', time: '昨天 12:10', amount: '- ¥ 35.50', isExpense: true, isAbnormal: false },
   ]);
 
-  // 🚀 新增一笔流水记录
+  // 新增一笔流水记录
   const addTransaction = (newTx: any) => {
     setTransactions((prev) => [newTx, ...prev]); // 插到最前面
   };
@@ -52,32 +52,36 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 🚀 首页：传入解冻方法，供申诉使用 */}
-      {currentPage === 'home' && (
-        <HomeScreen 
-          isFrozen={isFrozen} 
-          userPhone={userPhone} 
-          onLogout={handleLogout} 
-          transactions={transactions} 
-          onUnfreeze={() => setIsFrozen(false)} 
-        />
-      )}
+      {/* 页面内容区域，占据全部空间 */}
+      <View style={{ flex: 1 }}>
+        {currentPage === 'home' && (
+          <HomeScreen 
+            isFrozen={isFrozen} 
+            userPhone={userPhone} 
+            onLogout={handleLogout} 
+            transactions={transactions} 
+            onUnfreeze={() => setIsFrozen(false)} 
+          />
+        )}
+        
+        {currentPage === 'transfer' && (
+          <TransferScreen 
+            onFreeze={() => setIsFrozen(true)} 
+            onUnfreeze={() => setIsFrozen(false)} 
+            addTransaction={addTransaction} 
+          />
+        )}
+        
+        {currentPage === 'qa' && <QAScreen />}
+        {currentPage === 'edu' && <EduScreen />}
+        {currentPage === 'script' && <ScriptDetectScreen />}
+      </View>
       
-      {/* 🚀 转账页：必须同时传入冻结和解冻方法，供弹窗内的申诉使用 */}
-      {currentPage === 'transfer' && (
-        <TransferScreen 
-          onFreeze={() => setIsFrozen(true)} 
-          onUnfreeze={() => setIsFrozen(false)} // 👈 刚才漏掉的就是这一行
-          addTransaction={addTransaction} 
-        />
-      )}
-      
-      {currentPage === 'qa' && <QAScreen />}
-      {currentPage === 'edu' && <EduScreen />}
-      {currentPage === 'script' && <ScriptDetectScreen />}
-      
+      {/* 核心修改：给底部导航栏加上绝对定位，隐藏时不再影响页面高度，彻底解决抖动 */}
       {!isKeyboardVisible && (
-        <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        <View style={styles.bottomNavContainer}>
+          <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        </View>
       )}
     </SafeAreaView>
   );
@@ -85,4 +89,11 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
+  bottomNavContainer: { 
+    position: 'absolute', 
+    bottom: 0, 
+    left: 0, 
+    right: 0, 
+    backgroundColor: 'white' // 保证背景色遮住后面的内容
+  }
 });
