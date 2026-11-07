@@ -17,3 +17,8 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     phone: str
     password: str
+
+class AlertRequest(BaseModel):
+    text: str
+    scam_type: str
+    user_phone: str = "未知用户"

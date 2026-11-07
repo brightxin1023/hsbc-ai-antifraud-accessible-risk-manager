@@ -3,8 +3,8 @@ import { View, Text, TextInput, Pressable, Alert, ActivityIndicator, StyleSheet,
 import * as Haptics from 'expo-haptics';
 import { detectFraudApi, alertFamilyApi } from '../services/api';
 
-// 🚀 新增 onUnfreeze 参数
-export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction }: { onFreeze: () => void, onUnfreeze: () => void, addTransaction: (tx: any) => void }) {
+// 接收 userPhone
+export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, userPhone }: any) {
   const [payee, setPayee] = useState('');
   const [cardNo, setCardNo] = useState('');
   const [amount, setAmount] = useState('');
@@ -15,7 +15,6 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction }:
   const [modalVisible, setModalVisible] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
 
-  // 🚀 终极自定义震动序列
   const triggerHaptic = (level: 'low' | 'medium' | 'high') => {
     if (level === 'low') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -118,8 +117,9 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction }:
 
     if (isForced) {
       if (resultData?.risk_level === 'high') {
-        await alertFamilyApi(note || '高危强制转账', resultData.scam_type);
-        Alert.alert("✅ 转账成功", "款项已汇出。系统已记录此笔高危交易，并已同步通知您的家属，请注意资金安全。");
+        // 传入 userPhone
+        await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone);
+        Alert.alert("✅ 转账成功", "款项已汇出。系统已向您的紧急联系人【辛先生】发送了高危预警短信和邮件，请注意资金安全。");
       } else {
         Alert.alert("✅ 转账成功", "款项已汇出。系统已记录此笔可疑交易。");
       }
@@ -145,17 +145,17 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction }:
     });
 
     if (resultData?.risk_level === 'high') {
-      await alertFamilyApi(note || '高危转账拦截', resultData.scam_type);
+      // 传入 userPhone
+      await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone);
       
       Alert.alert(
         "🛡️ 资金已进入保护状态", 
-        "系统已为您阻断交易。保护性冻结期间，您的工资入账及日常水电费自动扣款均不受影响。如需继续转账，请进行身份申诉。",
+        "系统已为您阻断交易。同时，已自动向您的紧急联系人【辛先生】发送了拦截通知。如需解冻，请呼叫人工客服核实身份。",
         [
           { text: "稍后处理", style: "cancel" },
           { 
             text: "📞 呼叫人工客服申诉解冻", 
             onPress: () => {
-              // 🚀 修复：先弹接通，确认后再解冻，避免弹窗阻塞叠加
               Alert.alert(
                 "📞 正在接通",
                 "正在为您转接反诈专属人工客服...",
@@ -163,7 +163,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction }:
                   {
                     text: "OK",
                     onPress: () => {
-                      onUnfreeze(); // 直接解除全局冻结状态
+                      onUnfreeze();
                       Alert.alert("✅ 解冻成功", "人工客服已为您核实身份，账户已恢复正常使用。请警惕陌生转账！");
                     }
                   }

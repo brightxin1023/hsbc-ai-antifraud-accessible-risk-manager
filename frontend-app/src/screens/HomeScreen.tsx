@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, View, Text, Pressable, Alert, StyleSheet } from 'react-native';
+import { alertFamilyApi } from '../services/api';
 
 export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions, onUnfreeze }: any) {
   const maskedPhone = userPhone ? `${userPhone.substring(0, 3)}****${userPhone.substring(7)}` : '';
@@ -40,7 +41,6 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
     );
   };
 
-  // 🚀 优化：全场景包容的人工客服呼叫弹窗
   const handleSOSCall = () => {
     Alert.alert(
       "📞 联系人工客服",
@@ -48,7 +48,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       [
         { text: "取消", style: "cancel" },
         { 
-          text: "立即呼叫", 
+          text: "📞 立即呼叫", 
           onPress: () => {
             Alert.alert(
               "📞 正在接通",
@@ -61,10 +61,45 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
     );
   };
 
+  const handleCallFamily = () => {
+    Alert.alert(
+      "📞 呼叫紧急联系人",
+      "是否立即致电您的紧急联系人【辛先生】？",
+      [
+        { text: "取消", style: "cancel" },
+        { 
+          text: "📞 立即致电", 
+          onPress: () => Alert.alert("📞 正在呼叫", "正在呼叫【辛先生】(186****6207)...") 
+        }
+      ]
+    );
+  };
+
+  const handleEmailAlert = () => {
+    Alert.alert(
+      "✉️ 发送紧急告警",
+      "将向紧急联系人【辛先生】发送紧急求助邮件，是否确认？",
+      [
+        { text: "取消", style: "cancel" },
+        { 
+          text: "✉️ 确认发送", 
+          onPress: async () => {
+            try {
+              // 传空文本、紧急求助类型、以及当前用户手机号
+              await alertFamilyApi("", "紧急求助", userPhone);
+              Alert.alert("✅ 发送成功", "紧急求助邮件已发送至【辛先生】的邮箱。");
+            } catch (error) {
+              Alert.alert("❌ 发送失败", "网络异常，请稍后重试。");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
       
-      {/* 🚀 只有 isFrozen 为 true 时，才展示这个红框 */}
       {isFrozen && (
         <View style={styles.frozenBanner}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
@@ -89,6 +124,24 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
           </View>
           <Pressable onPress={confirmLogout} style={styles.logoutBtn} accessibilityLabel="退出登录">
             <Text style={styles.logoutText}>退出</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <View style={styles.familyCard}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+          <Text style={{ fontSize: 24, marginRight: 10 }}>👨‍👩‍👧</Text>
+          <View>
+            <Text style={styles.familyTitle}>家庭安全守护已开启</Text>
+            <Text style={styles.familyDesc}>紧急联系人：辛先生</Text>
+          </View>
+        </View>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Pressable style={[styles.familyBtn, { backgroundColor: '#1976D2', flex: 1 }]} onPress={handleCallFamily}>
+            <Text style={styles.familyBtnText}>📞 呼叫</Text>
+          </Pressable>
+          <Pressable style={[styles.familyBtn, { backgroundColor: '#D32F2F', flex: 1 }]} onPress={handleEmailAlert}>
+            <Text style={styles.familyBtnText}>✉️ 告警</Text>
           </Pressable>
         </View>
       </View>
@@ -172,10 +225,8 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       </View>
 
       <View style={styles.serviceBox}>
-        {/* 🚀 优化：包容万象的提问 */}
         <Text style={styles.serviceText}>遇到操作疑问、账户异常或其他资金问题？</Text>
         <Pressable style={styles.sosButton} onPress={handleSOSCall}>
-          {/* 🚀 优化：更标准的表述 */}
           <Text style={styles.buttonText}>📞 呼叫人工客服</Text>
         </Pressable>
       </View>
@@ -186,18 +237,31 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, backgroundColor: '#f0f2f5' },
   
-  // 🚀 冻结横幅样式
   frozenBanner: { backgroundColor: '#FFEBEE', padding: 20, borderRadius: 12, borderWidth: 2, borderColor: '#D32F2F', marginBottom: 20 },
   frozenBannerTitle: { color: '#D32F2F', fontSize: 18, fontWeight: 'bold' },
   frozenBannerText: { color: '#B71C1C', fontSize: 14, lineHeight: 22, marginBottom: 15 },
   appealBtn: { backgroundColor: '#D32F2F', padding: 12, borderRadius: 8, alignItems: 'center' },
   appealBtnText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
 
-  headerCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 12, marginBottom: 25, elevation: 4 },
+  headerCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 12, marginBottom: 20, elevation: 4 },
   headerTitle: { color: 'white', fontSize: 20, fontWeight: 'bold' },
   headerSubtitle: { color: 'white', fontSize: 15, marginTop: 5, opacity: 0.9 },
   logoutBtn: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   logoutText: { color: 'white', fontSize: 14, fontWeight: 'bold' },
+  
+  familyCard: { 
+    backgroundColor: '#E3F2FD', 
+    borderRadius: 12, 
+    padding: 16, 
+    marginBottom: 20, 
+    borderWidth: 1,
+    borderColor: '#BBDEFB'
+  },
+  familyTitle: { fontSize: 16, fontWeight: 'bold', color: '#1565C0' },
+  familyDesc: { fontSize: 13, color: '#1976D2', marginTop: 4 },
+  familyBtn: { paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  familyBtnText: { color: 'white', fontSize: 15, fontWeight: 'bold' },
+
   sectionTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 15, color: '#333' },
   listContainer: { backgroundColor: 'white', borderRadius: 12, overflow: 'hidden', marginBottom: 20 },
   listItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18 },

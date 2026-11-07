@@ -69,6 +69,7 @@ export default function App() {
             onFreeze={() => setIsFrozen(true)} 
             onUnfreeze={() => setIsFrozen(false)} 
             addTransaction={addTransaction} 
+            userPhone={userPhone}
           />
         )}
         

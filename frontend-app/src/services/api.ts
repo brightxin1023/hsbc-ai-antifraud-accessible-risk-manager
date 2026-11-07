@@ -18,11 +18,11 @@ export const askQuestionApi = async (query: string) => {
   return response.json();
 };
 
-export const alertFamilyApi = async (text: string, scam_type: string) => {
+export const alertFamilyApi = async (text: string, scam_type: string, user_phone: string) => {
   const response = await fetch(`${BASE_URL}/api/alert/family`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, scam_type }),
+    body: JSON.stringify({ text, scam_type, user_phone }),
   });
   return response.json();
 };
