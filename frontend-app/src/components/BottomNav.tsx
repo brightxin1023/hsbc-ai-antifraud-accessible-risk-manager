@@ -10,6 +10,9 @@ export default function BottomNav({ currentPage, setCurrentPage }: any) {
       <Pressable onPress={() => setCurrentPage('transfer')} style={styles.navItem}>
         <Text style={[styles.navText, currentPage === 'transfer' && styles.navTextActive]}>💸 转账</Text>
       </Pressable>
+      <Pressable onPress={() => setCurrentPage('script')} style={styles.navItem}>
+        <Text style={[styles.navText, currentPage === 'script' && styles.navTextActive]}>📩 剧本</Text>
+      </Pressable>
       <Pressable onPress={() => setCurrentPage('qa')} style={styles.navItem}>
         <Text style={[styles.navText, currentPage === 'qa' && styles.navTextActive]}>💬 问答</Text>
       </Pressable>
@@ -21,8 +24,8 @@ export default function BottomNav({ currentPage, setCurrentPage }: any) {
 }
 
 const styles = StyleSheet.create({
-  navBar: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 15, backgroundColor: 'white', borderTopWidth: 1, borderColor: '#ddd' },
-  navItem: { alignItems: 'center' },
-  navText: { fontSize: 16, color: '#666' },
+  navBar: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 12, backgroundColor: 'white', borderTopWidth: 1, borderColor: '#eee' },
+  navItem: { flex: 1, alignItems: 'center', justifyContent: 'center' }, // flex: 1 确保均分
+  navText: { fontSize: 14, color: '#666' },
   navTextActive: { color: '#D32F2F', fontWeight: 'bold' },
 });

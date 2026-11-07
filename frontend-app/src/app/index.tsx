@@ -7,6 +7,7 @@ import HomeScreen from '../screens/HomeScreen';
 import TransferScreen from '../screens/TransferScreen';
 import QAScreen from '../screens/QAScreen';
 import EduScreen from '../screens/EduScreen';
+import ScriptDetectScreen from '../screens/ScriptDetectScreen';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -73,6 +74,7 @@ export default function App() {
       
       {currentPage === 'qa' && <QAScreen />}
       {currentPage === 'edu' && <EduScreen />}
+      {currentPage === 'script' && <ScriptDetectScreen />}
       
       {!isKeyboardVisible && (
         <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
