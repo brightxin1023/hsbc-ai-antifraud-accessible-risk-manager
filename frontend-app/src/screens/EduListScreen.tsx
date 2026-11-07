@@ -1,0 +1,71 @@
+import React from 'react';
+import { ScrollView, View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+
+export const ARTICLES = [
+  { id: '1', icon: '🛡️', title: '绝不向陌生账户转账', summary: '公检法机关、银行客服绝对不会通过电话要求您转账。' },
+  { id: '2', icon: '⚠️', title: '警惕“高回报”投资理财', summary: '凡是号称“稳赚不赔”、“日赚千元”的网络投资，100% 都是诈骗。' },
+  { id: '3', icon: '📞', title: '遇到疑问请拨打 96110', summary: '遇到任何拿不准的电话或信息，请立刻挂断并拨打全国反诈专线。' },
+  { id: '4', icon: '📦', title: '警惕“客服理赔”骗局', summary: '快递丢失、商品质量问题，正规客服绝不会要求您转账验证。' },
+  { id: '5', icon: '💳', title: 'ETC/医保卡过期短信诈骗', summary: '带有陌生链接，要求填写银行卡密码的短信，都是钓鱼诈骗。' },
+  { id: '6', icon: '💔', title: '警惕“杀猪盘”网恋投资', summary: '网恋对象只要提到“投资理财”、“带你赚钱”，100% 是诈骗。' },
+  { id: '7', icon: '👔', title: '冒充领导/熟人借钱', summary: '熟人通过微信借钱，必须打电话核实，切勿仅凭文字转账。' },
+  { id: '8', icon: '🎓', title: '注销校园贷/影响征信', summary: '个人征信由央行统一管理，任何人无权删除，不存在注销校园贷。' },
+  { id: '9', icon: '💸', title: '刷单返利诈骗', summary: '所有要求垫资的刷单、点赞兼职都是诈骗，切勿贪小便宜。' },
+  { id: '10', icon: '🔞', title: '裸聊敲诈勒索', summary: '千万不要和陌生人视频裸聊，不点不明链接，不下载不明APP。' }
+];
+
+export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (article: any) => void }) {
+  const playVoice = (content: string) => {
+    Alert.alert("🔊 语音播报", content);
+  };
+
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.headerBox}>
+        <Text style={styles.pageTitle}>反诈防骗小课堂</Text>
+        <Text style={styles.pageSubtitle}>全民反诈，守护您的钱袋子</Text>
+      </View>
+
+      {ARTICLES.map((article) => (
+        <Pressable 
+          key={article.id} 
+          style={styles.card} 
+          onPress={() => onSelectArticle(article)}
+        >
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardIcon}>{article.icon}</Text>
+            <Text style={styles.cardTitle}>{article.title}</Text>
+          </View>
+          <Text style={styles.cardSummary}>{article.summary}</Text>
+          
+          <View style={styles.cardFooter}>
+            <Text style={styles.readMore}>点击查看真实案例 →</Text>
+            <Pressable 
+              style={styles.voiceBtnSmall} 
+              onPress={() => playVoice(article.summary)}
+            >
+              <Text style={styles.voiceBtnTextSmall}>🔊 语音播报</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      ))}
+      <View style={{ height: 40 }} />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, backgroundColor: '#f0f2f5' },
+  headerBox: { marginBottom: 20, alignItems: 'center' },
+  pageTitle: { fontSize: 28, fontWeight: 'bold', color: '#D32F2F', marginBottom: 8 },
+  pageSubtitle: { fontSize: 16, color: '#666' },
+  card: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 20, marginBottom: 16, borderWidth: 2, borderColor: '#333333' },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  cardIcon: { fontSize: 28, marginRight: 10 },
+  cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#000', flex: 1 },
+  cardSummary: { fontSize: 16, color: '#333', lineHeight: 24, marginBottom: 15 },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  readMore: { fontSize: 15, color: '#1976D2', fontWeight: 'bold' },
+  voiceBtnSmall: { backgroundColor: '#E3F2FD', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  voiceBtnTextSmall: { color: '#1976D2', fontSize: 15, fontWeight: 'bold' },
+});

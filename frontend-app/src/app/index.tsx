@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Keyboard, View } from 'react-native'; // 新增引入了 View
+import { StyleSheet, Keyboard, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import TransferScreen from '../screens/TransferScreen';
 import QAScreen from '../screens/QAScreen';
-import EduScreen from '../screens/EduScreen';
+import EduListScreen from '../screens/EduListScreen';
+import EduDetailScreen from '../screens/EduDetailScreen';
 import ScriptDetectScreen from '../screens/ScriptDetectScreen';
 
 export default function App() {
@@ -16,7 +17,9 @@ export default function App() {
   const [isFrozen, setIsFrozen] = useState(false);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
-  // 全局流水账本
+  // 新增：用于控制科普详情页的状态
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+
   const [transactions, setTransactions] = useState<any[]>([
     { id: 1, title: '转账 - 某某科技有限公司', time: '今天 10:24', amount: '- ¥ 8,000.00', isExpense: true, isAbnormal: false },
     { id: 2, title: '游戏充值 - 某某游戏平台', time: '今天 09:15', amount: '- ¥ 328.00', isExpense: true, isAbnormal: true },
@@ -24,9 +27,8 @@ export default function App() {
     { id: 4, title: '外卖 - 某某餐饮', time: '昨天 12:10', amount: '- ¥ 35.50', isExpense: true, isAbnormal: false },
   ]);
 
-  // 新增一笔流水记录
   const addTransaction = (newTx: any) => {
-    setTransactions((prev) => [newTx, ...prev]); // 插到最前面
+    setTransactions((prev) => [newTx, ...prev]);
   };
 
   useEffect(() => {
@@ -52,34 +54,35 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 页面内容区域，占据全部空间 */}
       <View style={{ flex: 1 }}>
-        {currentPage === 'home' && (
-          <HomeScreen 
-            isFrozen={isFrozen} 
-            userPhone={userPhone} 
-            onLogout={handleLogout} 
-            transactions={transactions} 
-            onUnfreeze={() => setIsFrozen(false)} 
-          />
+        {/* 如果选中了文章，就显示详情页，否则显示正常的底部 Tab 页面 */}
+        {selectedArticle ? (
+          <EduDetailScreen articleId={selectedArticle.id} onBack={() => setSelectedArticle(null)} />
+        ) : (
+          <>
+            {currentPage === 'home' && (
+              <HomeScreen 
+                isFrozen={isFrozen} userPhone={userPhone} onLogout={handleLogout} 
+                transactions={transactions} onUnfreeze={() => setIsFrozen(false)} 
+              />
+            )}
+            
+            {currentPage === 'transfer' && (
+              <TransferScreen 
+                onFreeze={() => setIsFrozen(true)} onUnfreeze={() => setIsFrozen(false)} 
+                addTransaction={addTransaction} userPhone={userPhone}
+              />
+            )}
+            
+            {currentPage === 'qa' && <QAScreen />}
+            {currentPage === 'script' && <ScriptDetectScreen />}
+            {currentPage === 'edu' && <EduListScreen onSelectArticle={(article) => setSelectedArticle(article)} />}
+          </>
         )}
-        
-        {currentPage === 'transfer' && (
-          <TransferScreen 
-            onFreeze={() => setIsFrozen(true)} 
-            onUnfreeze={() => setIsFrozen(false)} 
-            addTransaction={addTransaction} 
-            userPhone={userPhone}
-          />
-        )}
-        
-        {currentPage === 'qa' && <QAScreen />}
-        {currentPage === 'edu' && <EduScreen />}
-        {currentPage === 'script' && <ScriptDetectScreen />}
       </View>
       
-      {/* 核心修改：给底部导航栏加上绝对定位，隐藏时不再影响页面高度，彻底解决抖动 */}
-      {!isKeyboardVisible && (
+      {/* 只有在没有进入详情页时，才显示底部导航栏 */}
+      {!isKeyboardVisible && !selectedArticle && (
         <View style={styles.bottomNavContainer}>
           <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
         </View>
@@ -91,10 +94,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
   bottomNavContainer: { 
-    position: 'absolute', 
-    bottom: 0, 
-    left: 0, 
-    right: 0, 
-    backgroundColor: 'white' // 保证背景色遮住后面的内容
+    position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'white' 
   }
 });
