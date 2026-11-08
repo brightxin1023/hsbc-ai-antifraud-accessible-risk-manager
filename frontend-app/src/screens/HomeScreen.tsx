@@ -85,7 +85,6 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
           text: "✉️ 确认发送", 
           onPress: async () => {
             try {
-              // 传空文本、紧急求助类型、以及当前用户手机号
               await alertFamilyApi("", "紧急求助", userPhone);
               Alert.alert("✅ 发送成功", "紧急求助邮件已发送至【辛先生】的邮箱。");
             } catch (error) {
@@ -101,15 +100,21 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
       
       {isFrozen && (
-        <View style={styles.frozenBanner}>
+        <View style={styles.frozenBanner} accessibilityLiveRegion="polite">
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <Text style={{ fontSize: 20, marginRight: 8 }}>🛡️</Text>
+            <Text style={{ fontSize: 20, marginRight: 8 }} accessible={false}>🛡️</Text>
             <Text style={styles.frozenBannerTitle}>账户已进入安全保护状态</Text>
           </View>
           <Text style={styles.frozenBannerText}>
             检测到高危风险，资金已自动拦截。保护期间，您的工资入账及日常水电费自动扣款均不受影响。
           </Text>
-          <Pressable style={styles.appealBtn} onPress={handleAppeal}>
+          <Pressable 
+            style={styles.appealBtn} 
+            onPress={handleAppeal}
+            accessibilityRole="button"
+            accessibilityLabel="呼叫人工客服申诉解冻"
+            accessibilityHint="按下后将呼叫人工客服以解除账户冻结"
+          >
             <Text style={styles.appealBtnText}>📞 呼叫人工客服申诉解冻</Text>
           </Pressable>
         </View>
@@ -122,7 +127,12 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
             <Text style={styles.headerSubtitle}>绑定账号: {maskedPhone}</Text>
             <Text style={styles.headerSubtitle}>尾号 {cardTail} 储蓄卡</Text>
           </View>
-          <Pressable onPress={confirmLogout} style={styles.logoutBtn} accessibilityLabel="退出登录">
+          <Pressable 
+            onPress={confirmLogout} 
+            style={styles.logoutBtn} 
+            accessibilityRole="button"
+            accessibilityLabel="退出登录"
+          >
             <Text style={styles.logoutText}>退出</Text>
           </Pressable>
         </View>
@@ -130,17 +140,27 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
 
       <View style={styles.familyCard}>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-          <Text style={{ fontSize: 24, marginRight: 10 }}>👨‍👩‍👧</Text>
+          <Text style={{ fontSize: 24, marginRight: 10 }} accessible={false}>👨‍👩‍👧</Text>
           <View>
             <Text style={styles.familyTitle}>家庭安全守护已开启</Text>
             <Text style={styles.familyDesc}>紧急联系人：辛先生</Text>
           </View>
         </View>
         <View style={{ flexDirection: 'row', gap: 10 }}>
-          <Pressable style={[styles.familyBtn, { backgroundColor: '#1976D2', flex: 1 }]} onPress={handleCallFamily}>
+          <Pressable 
+            style={[styles.familyBtn, { backgroundColor: '#1976D2', flex: 1 }]} 
+            onPress={handleCallFamily}
+            accessibilityRole="button"
+            accessibilityLabel="呼叫紧急联系人辛先生"
+          >
             <Text style={styles.familyBtnText}>📞 呼叫</Text>
           </Pressable>
-          <Pressable style={[styles.familyBtn, { backgroundColor: '#D32F2F', flex: 1 }]} onPress={handleEmailAlert}>
+          <Pressable 
+            style={[styles.familyBtn, { backgroundColor: '#D32F2F', flex: 1 }]} 
+            onPress={handleEmailAlert}
+            accessibilityRole="button"
+            accessibilityLabel="发送紧急告警邮件给辛先生"
+          >
             <Text style={styles.familyBtnText}>✉️ 告警</Text>
           </Pressable>
         </View>
@@ -218,7 +238,6 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
                   )}
                 </View>
               </View>
-
             </View>
           );
         })}
@@ -226,7 +245,12 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
 
       <View style={styles.serviceBox}>
         <Text style={styles.serviceText}>遇到操作疑问、账户异常或其他资金问题？</Text>
-        <Pressable style={styles.sosButton} onPress={handleSOSCall}>
+        <Pressable 
+          style={styles.sosButton} 
+          onPress={handleSOSCall}
+          accessibilityRole="button"
+          accessibilityLabel="呼叫人工客服"
+        >
           <Text style={styles.buttonText}>📞 呼叫人工客服</Text>
         </Pressable>
       </View>
@@ -249,14 +273,7 @@ const styles = StyleSheet.create({
   logoutBtn: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   logoutText: { color: 'white', fontSize: 14, fontWeight: 'bold' },
   
-  familyCard: { 
-    backgroundColor: '#E3F2FD', 
-    borderRadius: 12, 
-    padding: 16, 
-    marginBottom: 20, 
-    borderWidth: 1,
-    borderColor: '#BBDEFB'
-  },
+  familyCard: { backgroundColor: '#E3F2FD', borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#BBDEFB' },
   familyTitle: { fontSize: 16, fontWeight: 'bold', color: '#1565C0' },
   familyDesc: { fontSize: 13, color: '#1976D2', marginTop: 4 },
   familyBtn: { paddingVertical: 10, borderRadius: 8, alignItems: 'center' },

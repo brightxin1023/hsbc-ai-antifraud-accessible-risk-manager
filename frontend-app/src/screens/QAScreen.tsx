@@ -19,7 +19,6 @@ export default function QAScreen() {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   
-  // 监听键盘高度
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [isRecording, setIsRecording] = useState(false);
@@ -40,7 +39,6 @@ export default function QAScreen() {
     };
   }, []);
 
-  // 触发滚动：当消息变化、loading变化、或者键盘高度变化时，滚到底部
   useEffect(() => {
     const timer = setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
@@ -48,7 +46,6 @@ export default function QAScreen() {
     return () => clearTimeout(timer);
   }, [messages, loading, keyboardHeight]); 
 
-  // 录音倒计时逻辑
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isRecording) {
@@ -105,8 +102,12 @@ export default function QAScreen() {
 
   const renderItem = ({ item }: { item: Message }) => (
     <View style={[styles.msgRow, item.role === 'user' ? styles.msgRowUser : styles.msgRowAi]}>
-      {item.role === 'ai' && <Text style={styles.avatar}>🛡️</Text>}
-      <View style={[styles.bubble, item.role === 'user' ? styles.bubbleUser : styles.bubbleAi]}>
+      {item.role === 'ai' && <Text style={styles.avatar} accessible={false}>🛡️</Text>}
+      <View 
+        style={[styles.bubble, item.role === 'user' ? styles.bubbleUser : styles.bubbleAi]}
+        accessible={true}
+        accessibilityLabel={item.role === 'user' ? `我说：${item.content}` : `AI助手说：${item.content}`}
+      >
         <Text style={item.role === 'user' ? styles.textUser : styles.textAi}>{item.content}</Text>
       </View>
     </View>
@@ -115,7 +116,7 @@ export default function QAScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>反诈智能问答</Text>
+        <Text style={styles.headerTitle} accessibilityRole="header">反诈智能问答</Text>
         <View style={styles.tagContainer}>
           <Text style={styles.tagText}>基于 RAG 话术库 · 精准防幻觉</Text>
         </View>
@@ -132,8 +133,11 @@ export default function QAScreen() {
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         ListFooterComponent={loading ? (
-          <View style={[styles.msgRow, styles.msgRowAi, { marginBottom: 10 }]}>
-            <Text style={styles.avatar}>🛡️</Text>
+          <View 
+            style={[styles.msgRow, styles.msgRowAi, { marginBottom: 10 }]}
+            accessibilityLiveRegion="polite"
+          >
+            <Text style={styles.avatar} accessible={false}>🛡️</Text>
             <View style={[styles.bubble, styles.bubbleAi, { flexDirection: 'row', alignItems: 'center' }]}>
               <ActivityIndicator size="small" color="#D32F2F" />
               <Text style={[styles.textAi, { marginLeft: 8 }]}>AI 正在分析话术库...</Text>
@@ -159,13 +163,28 @@ export default function QAScreen() {
             onChangeText={setInputText}
             editable={!isRecording}
             blurOnSubmit={true}
+            accessibilityLabel="输入你的反诈问题"
           />
           
-          <Pressable style={[styles.voiceBtn, isRecording && { backgroundColor: '#FFEBEE' }]} onPress={handleVoiceInput} disabled={isRecording}>
+          <Pressable 
+            style={[styles.voiceBtn, isRecording && { backgroundColor: '#FFEBEE' }]} 
+            onPress={handleVoiceInput} 
+            disabled={isRecording}
+            accessibilityRole="button"
+            accessibilityLabel={isRecording ? "正在录音中" : "语音输入"}
+            accessibilityState={{ busy: isRecording }}
+          >
             <Text style={{ fontSize: 20 }}>{isRecording ? '🔴' : '🎙️'}</Text>
           </Pressable>
 
-          <Pressable style={[styles.sendBtn, !inputText.trim() && { opacity: 0.5 }]} onPress={handleSend} disabled={!inputText.trim() || loading}>
+          <Pressable 
+            style={[styles.sendBtn, !inputText.trim() && { opacity: 0.5 }]} 
+            onPress={handleSend} 
+            disabled={!inputText.trim() || loading}
+            accessibilityRole="button"
+            accessibilityLabel="发送消息"
+            accessibilityState={{ disabled: !inputText.trim() || loading }}
+          >
             <Text style={styles.sendBtnText}>发送</Text>
           </Pressable>
         </View>
@@ -176,37 +195,10 @@ export default function QAScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
-  
-  // 改回灰色背景，保留分界线
-  header: { 
-    paddingVertical: 15, 
-    backgroundColor: '#f0f2f5', 
-    alignItems: 'center', 
-    borderBottomWidth: 0.5, 
-    borderBottomColor: '#ddd' 
-  },
-  
-  // 大幅放大字号
-  headerTitle: { 
-    fontSize: 26, 
-    fontWeight: 'bold', 
-    color: '#333' 
-  },
-  tagContainer: { 
-    backgroundColor: '#E3F2FD', 
-    paddingHorizontal: 10, 
-    paddingVertical: 4, 
-    borderRadius: 12, 
-    marginTop: 8 
-  },
-  
-  // 大幅放大标签字号
-  tagText: { 
-    fontSize: 16, 
-    color: '#1976D2', 
-    fontWeight: 'bold' 
-  },
-  
+  header: { paddingVertical: 15, backgroundColor: '#f0f2f5', alignItems: 'center', borderBottomWidth: 0.5, borderBottomColor: '#ddd' },
+  headerTitle: { fontSize: 26, fontWeight: 'bold', color: '#333' },
+  tagContainer: { backgroundColor: '#E3F2FD', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 8 },
+  tagText: { fontSize: 16, color: '#1976D2', fontWeight: 'bold' },
   chatArea: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10 },
   msgRow: { flexDirection: 'row', marginBottom: 20, alignItems: 'flex-start' },
   msgRowUser: { justifyContent: 'flex-end' },
@@ -215,18 +207,9 @@ const styles = StyleSheet.create({
   bubble: { maxWidth: '80%', padding: 15, borderRadius: 16 },
   bubbleUser: { backgroundColor: '#D32F2F', borderBottomRightRadius: 4 },
   bubbleAi: { backgroundColor: 'white', borderBottomLeftRadius: 4, elevation: 1 },
-  
-  // 聊天气泡字号放大
   textUser: { color: 'white', fontSize: 17, lineHeight: 26 },
   textAi: { color: '#333', fontSize: 17, lineHeight: 26 },
-  
-  inputArea: { 
-    backgroundColor: 'white', 
-    paddingHorizontal: 15, 
-    paddingTop: 10,
-    borderTopWidth: 0.5, 
-    borderTopColor: '#ddd' 
-  },
+  inputArea: { backgroundColor: 'white', paddingHorizontal: 15, paddingTop: 10, borderTopWidth: 0.5, borderTopColor: '#ddd' },
   inputRow: { flexDirection: 'row', alignItems: 'flex-end' },
   input: { flex: 1, backgroundColor: '#f5f5f5', borderRadius: 20, paddingHorizontal: 15, paddingVertical: 12, fontSize: 17, maxHeight: 100, minHeight: 44 },
   voiceBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#f5f5f5', justifyContent: 'center', alignItems: 'center', marginLeft: 10 },

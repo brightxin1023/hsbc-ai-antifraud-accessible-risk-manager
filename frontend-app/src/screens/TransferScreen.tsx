@@ -3,7 +3,6 @@ import { View, Text, TextInput, Pressable, Alert, ActivityIndicator, StyleSheet,
 import * as Haptics from 'expo-haptics';
 import { detectFraudApi, alertFamilyApi } from '../services/api';
 
-// 接收 userPhone
 export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, userPhone }: any) {
   const [payee, setPayee] = useState('');
   const [cardNo, setCardNo] = useState('');
@@ -117,7 +116,6 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
 
     if (isForced) {
       if (resultData?.risk_level === 'high') {
-        // 传入 userPhone
         await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone);
         Alert.alert("✅ 转账成功", "款项已汇出。系统已向您的紧急联系人【辛先生】发送了高危预警短信和邮件，请注意资金安全。");
       } else {
@@ -145,7 +143,6 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     });
 
     if (resultData?.risk_level === 'high') {
-      // 传入 userPhone
       await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone);
       
       Alert.alert(
@@ -202,10 +199,26 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             <View style={styles.formCard}>
               
               <Text style={styles.label}>户名</Text>
-              <TextInput style={styles.input} placeholder="收款人户名/企业账户名" placeholderTextColor="#999" value={payee} onChangeText={setPayee} />
+              <TextInput 
+                style={styles.input} 
+                placeholder="收款人户名/企业账户名" 
+                placeholderTextColor="#999" 
+                value={payee} 
+                onChangeText={setPayee} 
+                accessibilityLabel="收款人户名输入框"
+              />
 
               <Text style={styles.label}>账号</Text>
-              <TextInput style={styles.input} placeholder="银行卡号/信用卡号/企业账号" placeholderTextColor="#999" keyboardType="number-pad" maxLength={19} value={cardNo} onChangeText={setCardNo} />
+              <TextInput 
+                style={styles.input} 
+                placeholder="银行卡号/信用卡号/企业账号" 
+                placeholderTextColor="#999" 
+                keyboardType="number-pad" 
+                maxLength={19} 
+                value={cardNo} 
+                onChangeText={setCardNo} 
+                accessibilityLabel="收款人银行卡号输入框"
+              />
               
               {bankInfo ? (
                 <Text style={styles.bankInfoText} accessibilityLiveRegion="polite">🏦 {bankInfo}</Text>
@@ -216,14 +229,38 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
               <Text style={styles.label}>转账金额</Text>
               <View style={styles.amountWrapper}>
                 <Text style={styles.currencySymbol}>¥</Text>
-                <TextInput style={styles.amountInput} placeholder="0.00" placeholderTextColor="#999" keyboardType="decimal-pad" value={amount} onChangeText={setAmount} />
+                <TextInput 
+                  style={styles.amountInput} 
+                  placeholder="0.00" 
+                  placeholderTextColor="#999" 
+                  keyboardType="decimal-pad" 
+                  value={amount} 
+                  onChangeText={setAmount} 
+                  accessibilityLabel="转账金额输入框"
+                />
               </View>
 
               <Text style={styles.label}>转账附言</Text>
-              <TextInput style={styles.textArea} placeholder="选填。可填写转账目的、备忘信息等。若对方要求你转账，可填入对方的目的或话术。" placeholderTextColor="#999" multiline textAlignVertical="top" value={note} onChangeText={setNote} />
+              <TextInput 
+                style={styles.textArea} 
+                placeholder="选填。可填写转账目的、备忘信息等。若对方要求你转账，可填入对方的目的或话术。" 
+                placeholderTextColor="#999" 
+                multiline 
+                textAlignVertical="top" 
+                value={note} 
+                onChangeText={setNote} 
+                accessibilityLabel="转账附言输入框，选填"
+              />
             </View>
 
-            <Pressable style={[styles.actionBtn, loading && { opacity: 0.7 }]} onPress={checkFraud} disabled={loading}>
+            <Pressable 
+              style={[styles.actionBtn, loading && { opacity: 0.7 }]} 
+              onPress={checkFraud} 
+              disabled={loading}
+              accessibilityRole="button"
+              accessibilityLabel="确认转账并进行安全检测"
+              accessibilityState={{ disabled: loading, busy: loading }}
+            >
               {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>确认转账并进行安全检测</Text>}
             </Pressable>
 
@@ -233,10 +270,13 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
       </TouchableWithoutFeedback>
 
       <Modal visible={modalVisible} transparent={true} animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.bg }]}>
+        <View style={styles.modalOverlay} accessibilityViewIsModal={true}>
+          <View 
+            style={[styles.modalContent, { backgroundColor: theme.bg }]}
+            accessibilityLiveRegion="assertive"
+          >
             
-            <Text style={styles.modalIcon}>{theme.icon}</Text>
+            <Text style={styles.modalIcon} accessible={false}>{theme.icon}</Text>
             <Text style={[styles.modalTitle, { color: theme.text }]}>{theme.title}</Text>
             
             <View style={styles.modalInfoBox}>
@@ -251,10 +291,21 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             <View style={styles.modalButtons}>
               {resultData?.risk_level === 'high' || resultData?.risk_level === 'medium' ? (
                 <>
-                  <Pressable style={[styles.modalBtn, { backgroundColor: 'rgba(0,0,0,0.15)' }]} onPress={() => executeTransfer(true)}>
+                  <Pressable 
+                    style={[styles.modalBtn, { backgroundColor: 'rgba(0,0,0,0.15)' }]} 
+                    onPress={() => executeTransfer(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel={theme.btn1}
+                    accessibilityHint="警告：这可能导致资金损失"
+                  >
                     <Text style={[styles.btnText, { color: theme.text }]}>{theme.btn1}</Text>
                   </Pressable>
-                  <Pressable style={[styles.modalBtn, { backgroundColor: theme.btn2Bg }]} onPress={handleCancelTransfer}>
+                  <Pressable 
+                    style={[styles.modalBtn, { backgroundColor: theme.btn2Bg }]} 
+                    onPress={handleCancelTransfer}
+                    accessibilityRole="button"
+                    accessibilityLabel={theme.btn2}
+                  >
                     <Text style={[styles.btnText, { color: 'white' }]}>{theme.btn2}</Text>
                   </Pressable>
                 </>
@@ -262,6 +313,8 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
                 <Pressable 
                   style={[styles.modalBtn, { backgroundColor: '#1B8A2E' }]}
                   onPress={() => executeTransfer(false)}
+                  accessibilityRole="button"
+                  accessibilityLabel="确认安全转账"
                 >
                   <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>确认转账</Text>
                 </Pressable>

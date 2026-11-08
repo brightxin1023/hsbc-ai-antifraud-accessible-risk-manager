@@ -22,7 +22,7 @@ export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (a
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.headerBox}>
-        <Text style={styles.pageTitle}>反诈防骗小课堂</Text>
+        <Text style={styles.pageTitle} accessibilityRole="header">反诈防骗小课堂</Text>
         <Text style={styles.pageSubtitle}>全民反诈，守护您的钱袋子</Text>
       </View>
 
@@ -31,9 +31,12 @@ export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (a
           key={article.id} 
           style={styles.card} 
           onPress={() => onSelectArticle(article)}
+          accessibilityRole="button"
+          accessibilityLabel={`${article.title}。${article.summary}`}
+          accessibilityHint="双击查看真实案例详情"
         >
           <View style={styles.cardHeader}>
-            <Text style={styles.cardIcon}>{article.icon}</Text>
+            <Text style={styles.cardIcon} accessible={false}>{article.icon}</Text>
             <Text style={styles.cardTitle}>{article.title}</Text>
           </View>
           <Text style={styles.cardSummary}>{article.summary}</Text>
@@ -42,7 +45,12 @@ export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (a
             <Text style={styles.readMore}>点击查看真实案例 →</Text>
             <Pressable 
               style={styles.voiceBtnSmall} 
-              onPress={() => playVoice(article.summary)}
+              onPress={(e) => {
+                e.stopPropagation(); // 防止触发外层卡片的点击
+                playVoice(article.summary);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`语音播报：${article.title}的摘要`}
             >
               <Text style={styles.voiceBtnTextSmall}>🔊 语音播报</Text>
             </Pressable>

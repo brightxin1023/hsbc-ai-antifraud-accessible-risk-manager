@@ -14,7 +14,6 @@ export default function ScriptDetectScreen() {
 
     setLoading(true);
     try {
-      // 直接复用后端的 detect 接口进行 NLP 语义风控
       const data = await detectFraudApi(inputText);
       
       let riskLevel = data.risk_level;
@@ -26,7 +25,6 @@ export default function ScriptDetectScreen() {
 
       setResult({ ...data, scam_type: scamType });
       
-      // 震动反馈
       if (riskLevel === 'high') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
       } else if (riskLevel === 'medium') {
@@ -57,7 +55,7 @@ export default function ScriptDetectScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
           <View style={styles.headerBox}>
-            <Text style={styles.pageTitle}>📩 涉诈剧本扫描</Text>
+            <Text style={styles.pageTitle} accessibilityRole="header">📩 涉诈剧本扫描</Text>
             <Text style={styles.description}>
               收到奇怪的短信、微信或电话录音转写？请直接粘贴到这里。AI 将进行端侧风险分级研判，帮您识破骗局。
             </Text>
@@ -71,16 +69,29 @@ export default function ScriptDetectScreen() {
             textAlignVertical="top"
             value={inputText}
             onChangeText={setInputText}
+            accessibilityLabel="粘贴可疑文本输入框"
           />
 
-          <Pressable style={[styles.actionBtn, loading && { opacity: 0.7 }]} onPress={checkScript} disabled={loading}>
+          <Pressable 
+            style={[styles.actionBtn, loading && { opacity: 0.7 }]} 
+            onPress={checkScript} 
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="开始 AI 剧本扫描"
+            accessibilityState={{ disabled: loading, busy: loading }}
+          >
             {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>开始 AI 剧本扫描</Text>}
           </Pressable>
 
           {result && (
-            <View style={[styles.resultCard, { backgroundColor: theme.bg, borderColor: theme.bg }]}>
+            <View 
+              style={[styles.resultCard, { backgroundColor: theme.bg, borderColor: theme.bg }]}
+              accessible={true}
+              accessibilityLiveRegion="assertive"
+              accessibilityLabel={`扫描结果：${theme.title}。识别类型：${result.scam_type}。AI建议：${result.suggestion}`}
+            >
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-                <Text style={{ fontSize: 28, marginRight: 10 }}>{theme.icon}</Text>
+                <Text style={{ fontSize: 28, marginRight: 10 }} accessible={false}>{theme.icon}</Text>
                 <Text style={[styles.resultTitle, { color: theme.text }]}>{theme.title}</Text>
               </View>
               
@@ -110,7 +121,6 @@ const styles = StyleSheet.create({
   input: { backgroundColor: 'white', borderRadius: 12, padding: 15, fontSize: 16, height: 180, marginBottom: 20, borderWidth: 1, borderColor: '#eee' },
   actionBtn: { backgroundColor: '#1976D2', padding: 18, borderRadius: 12, alignItems: 'center', marginBottom: 25 },
   buttonText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
-  
   resultCard: { padding: 20, borderRadius: 12, borderWidth: 2, elevation: 2 },
   resultTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, lineHeight: 26 },
   infoRow: { flexDirection: 'row', marginBottom: 12, alignItems: 'flex-start' },
