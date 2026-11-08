@@ -1,5 +1,6 @@
-import React from 'react';
-import { ScrollView, View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
+import CustomAlert from '../components/CustomAlert';
 
 export const ARTICLES = [
   { id: '1', icon: '🛡️', title: '绝不向陌生账户转账', summary: '公检法机关、银行客服绝对不会通过电话要求您转账。' },
@@ -15,65 +16,62 @@ export const ARTICLES = [
 ];
 
 export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (article: any) => void }) {
-  const playVoice = (content: string) => {
-    Alert.alert("🔊 语音播报", content);
+  const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
+
+  const playVoice = (content: string) => { 
+    setAlertConfig({ visible: true, title: "🔊 语音播报", message: content });
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.headerBox}>
-        <Text style={styles.pageTitle} accessibilityRole="header">反诈防骗小课堂</Text>
-        <Text style={styles.pageSubtitle}>全民反诈，守护您的钱袋子</Text>
-      </View>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.headerBox}>
+          <Text style={styles.pageTitle} accessibilityRole="header">反诈防骗小课堂</Text>
+          <Text style={styles.pageSubtitle}>全民反诈，守护您的钱袋子</Text>
+        </View>
 
-      {ARTICLES.map((article) => (
-        <Pressable 
-          key={article.id} 
-          style={styles.card} 
-          onPress={() => onSelectArticle(article)}
-          accessibilityRole="button"
-          accessibilityLabel={`${article.title}。${article.summary}`}
-          accessibilityHint="双击查看真实案例详情"
-        >
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardIcon} accessible={false}>{article.icon}</Text>
-            <Text style={styles.cardTitle}>{article.title}</Text>
-          </View>
-          <Text style={styles.cardSummary}>{article.summary}</Text>
-          
-          <View style={styles.cardFooter}>
-            <Text style={styles.readMore}>点击查看真实案例 →</Text>
-            <Pressable 
-              style={styles.voiceBtnSmall} 
-              onPress={(e) => {
-                e.stopPropagation(); // 防止触发外层卡片的点击
-                playVoice(article.summary);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={`语音播报：${article.title}的摘要`}
-            >
-              <Text style={styles.voiceBtnTextSmall}>🔊 语音播报</Text>
-            </Pressable>
-          </View>
-        </Pressable>
-      ))}
-      <View style={{ height: 40 }} />
-    </ScrollView>
+        {ARTICLES.map((article) => (
+          <Pressable key={article.id} style={styles.card} onPress={() => onSelectArticle(article)} accessibilityRole="button" accessibilityLabel={`${article.title}。${article.summary}`} accessibilityHint="双击查看真实案例详情">
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardIcon} accessible={false}>{article.icon}</Text>
+              <Text style={styles.cardTitle}>{article.title}</Text>
+            </View>
+            <Text style={styles.cardSummary}>{article.summary}</Text>
+            
+            <View style={styles.cardFooter}>
+              <Text style={styles.readMore}>点击查看真实案例 →</Text>
+              <Pressable style={styles.voiceBtnSmall} onPress={(e) => { e.stopPropagation(); playVoice(article.summary); }} accessibilityRole="button" accessibilityLabel={`语音播报：${article.title}的摘要`}>
+                <Text style={styles.voiceBtnTextSmall}>🔊 语音播报</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        ))}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={[{ text: '关闭', onPress: () => {} }]}
+        onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#f0f2f5' },
   headerBox: { marginBottom: 20, alignItems: 'center' },
-  pageTitle: { fontSize: 28, fontWeight: 'bold', color: '#D32F2F', marginBottom: 8 },
-  pageSubtitle: { fontSize: 16, color: '#666' },
+  pageTitle: { fontSize: 30, fontWeight: 'bold', color: '#D32F2F', marginBottom: 8 },
+  pageSubtitle: { fontSize: 18, color: '#666' },
   card: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 20, marginBottom: 16, borderWidth: 2, borderColor: '#333333' },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  cardIcon: { fontSize: 28, marginRight: 10 },
-  cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#000', flex: 1 },
-  cardSummary: { fontSize: 16, color: '#333', lineHeight: 24, marginBottom: 15 },
+  cardIcon: { fontSize: 32, marginRight: 10 },
+  cardTitle: { fontSize: 22, fontWeight: 'bold', color: '#000', flex: 1 },
+  cardSummary: { fontSize: 18, color: '#333', lineHeight: 28, marginBottom: 15 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  readMore: { fontSize: 15, color: '#1976D2', fontWeight: 'bold' },
-  voiceBtnSmall: { backgroundColor: '#E3F2FD', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  voiceBtnTextSmall: { color: '#1976D2', fontSize: 15, fontWeight: 'bold' },
+  readMore: { fontSize: 16, color: '#1976D2', fontWeight: 'bold' },
+  voiceBtnSmall: { backgroundColor: '#E3F2FD', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 8 },
+  voiceBtnTextSmall: { color: '#1976D2', fontSize: 16, fontWeight: 'bold' },
 });

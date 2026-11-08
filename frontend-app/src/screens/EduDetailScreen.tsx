@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet, Alert, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import CustomAlert from '../components/CustomAlert';
 
 const ARTICLE_DETAILS: any = {
   '1': { icon: '🛡️', title: '绝不向陌生账户转账', case: '张阿姨接到自称“公安局”的电话，称其涉嫌洗钱，需将资金转入“安全账户”。张阿姨信以为真，转账后发现被骗。', advice: '公检法机关绝对不会通过电话办案，也没有所谓的“安全账户”。遇到此类情况，请立即挂断并拨打 110 报警。' },
@@ -17,16 +18,23 @@ const ARTICLE_DETAILS: any = {
 export default function EduDetailScreen({ articleId, onBack }: { articleId: string, onBack: () => void }) {
   const article = ARTICLE_DETAILS[articleId];
   
+  // 🌟 引入 CustomAlert 的状态管理
+  const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
+  const showAlert = (title: string, message: string, buttons: any[] = [{ text: 'OK' }]) => {
+    setAlertConfig({ visible: true, title, message, buttons });
+  };
+
+  // 🌟 修复 Bug：去掉了 case 后面多余的手动句号，避免出现“。。”
   const fullVoiceText = article 
-    ? `${article.title}。真实案例：${article.case}。防骗指南：${article.advice}` 
+    ? `${article.title}。真实案例：${article.case}防骗指南：${article.advice}` 
     : '';
 
   const playVoice = () => {
-    Alert.alert("🔊 语音播报", fullVoiceText);
+    showAlert("🔊 语音播报", fullVoiceText);
   };
 
   const handleCall96110 = () => {
-    Alert.alert(
+    showAlert(
       "📞 呼叫全国反诈专线",
       "是否立即拨打 96110 进行咨询？",
       [
@@ -34,11 +42,7 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
         { 
           text: "📞 立即呼叫", 
           onPress: () => {
-            Alert.alert(
-              "📞 正在呼叫",
-              "正在为您接通全国反诈专线 96110...",
-              [{ text: "OK" }]
-            );
+            showAlert("📞 正在呼叫", "正在为您接通全国反诈专线 96110...", [{ text: "OK" }]);
           }
         }
       ]
@@ -51,14 +55,17 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
 
   return (
     <View style={styles.container}>
+      {/* 优化后的顶部导航栏 */}
       <View style={styles.header}>
         <Pressable 
           style={styles.backBtn} 
           onPress={onBack}
           accessibilityRole="button"
           accessibilityLabel="返回科普列表"
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
         >
-          <Text style={styles.backBtnText}>‹ 返回列表</Text>
+          <Text style={styles.backIcon}>‹</Text>
+          <Text style={styles.backBtnText}>返回列表</Text>
         </Pressable>
       </View>
       
@@ -111,15 +118,25 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
         
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* 🌟 全局自定义弹窗 */}
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
-  header: { backgroundColor: '#FFFFFF', paddingVertical: 15, paddingHorizontal: 20, borderBottomWidth: 0.5, borderBottomColor: '#ddd' },
-  backBtn: { paddingVertical: 5 },
-  backBtnText: { fontSize: 18, color: '#1976D2', fontWeight: 'bold' },
+  header: { backgroundColor: '#FFFFFF', paddingVertical: 12, paddingHorizontal: 15, borderBottomWidth: 0.5, borderBottomColor: '#ddd' },
+  backBtn: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingVertical: 8, paddingRight: 15 },
+  backIcon: { fontSize: 32, color: '#1976D2', fontWeight: '400', marginTop: -6, marginRight: 4 },
+  backBtnText: { fontSize: 20, color: '#1976D2', fontWeight: '600' },
   content: { padding: 20 },
   largeIcon: { fontSize: 60, textAlign: 'center', marginBottom: 15 },
   title: { fontSize: 26, fontWeight: 'bold', color: '#D32F2F', textAlign: 'center', marginBottom: 25, lineHeight: 36 },
