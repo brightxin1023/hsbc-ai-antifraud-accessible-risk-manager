@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, Alert, ActivityIndicator, StyleSheet, Modal, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, Pressable, Alert, ActivityIndicator, StyleSheet, Modal, KeyboardAvoidingView, Platform, Keyboard, ScrollView } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { detectFraudApi, alertFamilyApi } from '../services/api';
 
+// 接收 userPhone
 export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, userPhone }: any) {
   const [payee, setPayee] = useState('');
   const [cardNo, setCardNo] = useState('');
@@ -13,6 +14,9 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
+
+  // 新增：用于控制 ScrollView 自动滚动的 ref
+  const scrollViewRef = useRef<any>(null);
 
   const triggerHaptic = (level: 'low' | 'medium' | 'high') => {
     if (level === 'low') {
@@ -190,84 +194,95 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
 
   return (
     <View style={{ flex: 1 }}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-            <Text style={styles.pageTitle} accessibilityRole="header">账号转账</Text>
-            <Text style={styles.pageSubtitle}>您的资金安全由 AI 实时保护</Text>
+      {/* 移除了 TouchableWithoutFeedback，让 VoiceOver 和输入框聚焦更稳定 */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView 
+          ref={scrollViewRef}
+          contentContainerStyle={styles.container} 
+          showsVerticalScrollIndicator={false}
+          keyboardDismissMode="on-drag" // 滑动时自动收起键盘
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.pageTitle} accessibilityRole="header">账号转账</Text>
+          <Text style={styles.pageSubtitle}>您的资金安全由 AI 实时保护</Text>
 
-            <View style={styles.formCard}>
-              
-              <Text style={styles.label}>户名</Text>
+          <View style={styles.formCard}>
+            
+            <Text style={styles.label}>户名</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="收款人户名/企业账户名" 
+              placeholderTextColor="#999" 
+              value={payee} 
+              onChangeText={setPayee} 
+              accessibilityLabel="收款人户名输入框"
+            />
+
+            <Text style={styles.label}>账号</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="银行卡号/信用卡号/企业账号" 
+              placeholderTextColor="#999" 
+              keyboardType="number-pad" 
+              maxLength={19} 
+              value={cardNo} 
+              onChangeText={setCardNo} 
+              accessibilityLabel="收款人银行卡号输入框"
+            />
+            
+            {bankInfo ? (
+              <Text style={styles.bankInfoText} accessibilityLiveRegion="polite">🏦 {bankInfo}</Text>
+            ) : (
+              <View style={{ height: 15 }} />
+            )}
+
+            <Text style={styles.label}>转账金额</Text>
+            <View style={styles.amountWrapper}>
+              <Text style={styles.currencySymbol}>¥</Text>
               <TextInput 
-                style={styles.input} 
-                placeholder="收款人户名/企业账户名" 
+                style={styles.amountInput} 
+                placeholder="0.00" 
                 placeholderTextColor="#999" 
-                value={payee} 
-                onChangeText={setPayee} 
-                accessibilityLabel="收款人户名输入框"
-              />
-
-              <Text style={styles.label}>账号</Text>
-              <TextInput 
-                style={styles.input} 
-                placeholder="银行卡号/信用卡号/企业账号" 
-                placeholderTextColor="#999" 
-                keyboardType="number-pad" 
-                maxLength={19} 
-                value={cardNo} 
-                onChangeText={setCardNo} 
-                accessibilityLabel="收款人银行卡号输入框"
-              />
-              
-              {bankInfo ? (
-                <Text style={styles.bankInfoText} accessibilityLiveRegion="polite">🏦 {bankInfo}</Text>
-              ) : (
-                <View style={{ height: 15 }} />
-              )}
-
-              <Text style={styles.label}>转账金额</Text>
-              <View style={styles.amountWrapper}>
-                <Text style={styles.currencySymbol}>¥</Text>
-                <TextInput 
-                  style={styles.amountInput} 
-                  placeholder="0.00" 
-                  placeholderTextColor="#999" 
-                  keyboardType="decimal-pad" 
-                  value={amount} 
-                  onChangeText={setAmount} 
-                  accessibilityLabel="转账金额输入框"
-                />
-              </View>
-
-              <Text style={styles.label}>转账附言</Text>
-              <TextInput 
-                style={styles.textArea} 
-                placeholder="选填。可填写转账目的、备忘信息等。若对方要求你转账，可填入对方的目的或话术。" 
-                placeholderTextColor="#999" 
-                multiline 
-                textAlignVertical="top" 
-                value={note} 
-                onChangeText={setNote} 
-                accessibilityLabel="转账附言输入框，选填"
+                keyboardType="decimal-pad" 
+                value={amount} 
+                onChangeText={setAmount} 
+                accessibilityLabel="转账金额输入框"
               />
             </View>
 
-            <Pressable 
-              style={[styles.actionBtn, loading && { opacity: 0.7 }]} 
-              onPress={checkFraud} 
-              disabled={loading}
-              accessibilityRole="button"
-              accessibilityLabel="确认转账并进行安全检测"
-              accessibilityState={{ disabled: loading, busy: loading }}
-            >
-              {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>确认转账并进行安全检测</Text>}
-            </Pressable>
+            <Text style={styles.label}>转账附言</Text>
+            <TextInput 
+              style={styles.textArea} 
+              placeholder="选填。可填写转账目的、备忘信息等。若对方要求你转账，可填入对方的目的或话术。" 
+              placeholderTextColor="#999" 
+              multiline 
+              textAlignVertical="top" 
+              value={note} 
+              onChangeText={setNote} 
+              accessibilityLabel="转账附言输入框，选填"
+              // 🌟 核心优化：当聚焦附言框时，延时 100ms 等键盘完全弹起后，自动平滑滚动到底部
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollToEnd({ animated: true });
+                }, 100);
+              }}
+            />
+          </View>
 
-            <Text style={styles.securityTip}>🔒 本笔转账受 AI 盾实时风控保护，如遇诈骗请立即挂断并拨打 96110。</Text>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+          <Pressable 
+            style={[styles.actionBtn, loading && { opacity: 0.7 }]} 
+            onPress={checkFraud} 
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="确认转账并进行安全检测"
+            accessibilityState={{ disabled: loading, busy: loading }}
+          >
+            {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>确认转账并进行安全检测</Text>}
+          </Pressable>
+
+          <Text style={styles.securityTip}>🔒 本笔转账受 AI 盾实时风控保护，如遇诈骗请立即挂断并拨打 96110。</Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View style={styles.modalOverlay} accessibilityViewIsModal={true}>
