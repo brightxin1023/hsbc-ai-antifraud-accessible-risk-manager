@@ -9,6 +9,8 @@ import QAScreen from '../screens/QAScreen';
 import EduListScreen from '../screens/EduListScreen';
 import EduDetailScreen from '../screens/EduDetailScreen';
 import ScriptDetectScreen from '../screens/ScriptDetectScreen';
+import TransactionHistoryScreen from '../screens/TransactionHistoryScreen';
+import MyProfileScreen from '../screens/MyProfileScreen';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -19,6 +21,9 @@ export default function App() {
 
   // 新增：用于控制科普详情页的状态
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
+
+  // 新增：控制“全部交易流水”二级页面
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
 
   const [transactions, setTransactions] = useState<any[]>([
     { id: 1, title: '转账 - 某某科技有限公司', time: '11-10 10:24', amount: '- ¥ 8,000.00', isExpense: true, isAbnormal: false },
@@ -55,8 +60,10 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flex: 1 }}>
-        {/* 如果选中了文章，就显示详情页，否则显示正常的底部 Tab 页面 */}
-        {selectedArticle ? (
+        {/* 优先显示全部交易流水二级页面，其次科普详情页，最后是底部 Tab 页面 */}
+        {showAllTransactions ? (
+          <TransactionHistoryScreen transactions={transactions} onBack={() => setShowAllTransactions(false)} />
+        ) : selectedArticle ? (
           <EduDetailScreen articleId={selectedArticle.id} onBack={() => setSelectedArticle(null)} />
         ) : (
           <>
@@ -64,6 +71,7 @@ export default function App() {
               <HomeScreen 
                 isFrozen={isFrozen} userPhone={userPhone} onLogout={handleLogout} 
                 transactions={transactions} onUnfreeze={() => setIsFrozen(false)} 
+                onViewAllTransactions={() => setShowAllTransactions(true)}
               />
             )}
             
@@ -74,15 +82,18 @@ export default function App() {
               />
             )}
             
+            {currentPage === 'toolbox' && <ScriptDetectScreen />}
             {currentPage === 'qa' && <QAScreen />}
-            {currentPage === 'script' && <ScriptDetectScreen />}
             {currentPage === 'edu' && <EduListScreen onSelectArticle={(article) => setSelectedArticle(article)} />}
+            {currentPage === 'profile' && (
+              <MyProfileScreen userPhone={userPhone} onLogout={handleLogout} />
+            )}
           </>
         )}
       </View>
       
-      {/* 只有在没有进入详情页时，才显示底部导航栏 */}
-      {!isKeyboardVisible && !selectedArticle && (
+      {/* 只有在未进入详情页/全部流水页时，才显示底部导航栏 */}
+      {!isKeyboardVisible && !selectedArticle && !showAllTransactions && (
         <View style={styles.bottomNavContainer}>
           <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
         </View>

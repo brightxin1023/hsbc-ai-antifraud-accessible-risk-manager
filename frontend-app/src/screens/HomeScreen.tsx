@@ -3,9 +3,10 @@ import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import { alertFamilyApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
 
-export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions, onUnfreeze }: any) {
+export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions, onUnfreeze, onViewAllTransactions }: any) {
   const maskedPhone = userPhone ? `${userPhone.substring(0, 3)}****${userPhone.substring(7)}` : '';
   const cardTail = userPhone ? userPhone.substring(7) : '8888';
+  const recentTransactions = transactions.slice(0, 3);
 
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: 'OK' }]) => {
@@ -40,22 +41,6 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
               }]
             );
           } 
-        }
-      ]
-    );
-  };
-
-  const handleSOSCall = () => {
-    showAlert(
-      "📞 联系人工客服",
-      "无论您是不懂操作、遇到账户异常，还是怀疑遭遇了诈骗，都可以随时联系我们的专属人工客服。是否现在呼叫？",
-      [
-        { text: "取消", style: "cancel" },
-        { 
-          text: "📞 立即呼叫", 
-          onPress: () => {
-            showAlert("📞 正在接通", "正在为您转接专属人工客服，请稍候...", [{ text: "OK" }]);
-          }
         }
       ]
     );
@@ -149,7 +134,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         <Text style={styles.sectionTitle} accessibilityRole="header">近期交易流水</Text>
         
         <View style={styles.listContainer}>
-          {transactions.map((tx: any, index: number) => {
+          {recentTransactions.map((tx: any, index: number) => {
             let accessibilityStatus = '安全交易。';
             if (tx.isAbnormal) accessibilityStatus = '状态异常，资金已拦截。';
             else if (tx.isRisk === 'high') accessibilityStatus = '高危交易，已汇出。';
@@ -160,7 +145,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
             const cleanAmount = rawAmount.replace(/^[-+]\s*/, ''); 
 
             return (
-              <View key={tx.id} style={[styles.listItem, index !== transactions.length - 1 && styles.listItemBorder]} accessible={true} accessibilityLabel={`${tx.title}，时间${tx.time}，金额${isExpense ? '减' : '加'}${cleanAmount}。${accessibilityStatus}`}>
+              <View key={tx.id} style={[styles.listItem, index !== recentTransactions.length - 1 && styles.listItemBorder]} accessible={true} accessibilityLabel={`${tx.title}，时间${tx.time}，金额${isExpense ? '减' : '加'}${cleanAmount}。${accessibilityStatus}`}>
                 <View style={styles.txLeft}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
                     <Text style={styles.txTitle}>{tx.title}</Text>
@@ -202,12 +187,9 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
           })}
         </View>
 
-        <View style={styles.serviceBox}>
-          <Text style={styles.serviceText}>遇到操作疑问、账户异常或其他资金问题？</Text>
-          <Pressable style={styles.sosButton} onPress={handleSOSCall} accessibilityRole="button" accessibilityLabel="呼叫人工客服">
-            <Text style={styles.buttonText}>📞 呼叫人工客服</Text>
-          </Pressable>
-        </View>
+        <Pressable style={styles.viewAllBtn} onPress={onViewAllTransactions} accessibilityRole="button" accessibilityLabel="查看全部交易流水">
+          <Text style={styles.viewAllBtnText}>查看全部交易流水 →</Text>
+        </Pressable>
       </ScrollView>
 
       {/* 全局自定义弹窗 */}
@@ -275,8 +257,6 @@ const styles = StyleSheet.create({
   badgeLowRisk: { backgroundColor: '#E8F5E9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#A5D6A7', marginLeft: 8 },
   badgeLowRiskText: { fontSize: 14, color: '#2E7D32', fontWeight: 'bold' },
   
-  serviceBox: { backgroundColor: '#FFF3E0', padding: 20, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#FFE0B2' },
-  serviceText: { fontSize: 18, color: '#E65100', marginBottom: 15, fontWeight: 'bold' },
-  sosButton: { backgroundColor: '#FF9800', width: '100%', padding: 18, borderRadius: 10, alignItems: 'center' },
-  buttonText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
+  viewAllBtn: { backgroundColor: '#1976D2', padding: 18, borderRadius: 12, alignItems: 'center', marginBottom: 20, minHeight: 60 },
+  viewAllBtnText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
 });
