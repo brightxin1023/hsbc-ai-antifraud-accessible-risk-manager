@@ -10,7 +10,7 @@ interface Message { id: string; role: 'user' | 'ai'; content: string; }
 
 const BOTTOM_NAV_HEIGHT = 80;
 
-export default function QAScreen() {
+export default function QAScreen({ onBack }: any) {
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<Message[]>([
     { id: '0', role: 'ai', content: '您好！我是您的专属智能反诈助手。您可以问我任何拿不准的转账、短信或电话情况，我将基于最新诈骗话术库为您解答。' }
@@ -103,6 +103,13 @@ export default function QAScreen() {
 
   return (
     <View style={styles.container}>
+      {onBack ? (
+        <View style={styles.backBar}>
+          <Pressable onPress={onBack} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="返回工具箱">
+            <Text style={styles.backBtnText}>← 返回工具箱</Text>
+          </Pressable>
+        </View>
+      ) : null}
       <View style={styles.header}>
         <Text style={styles.headerTitle} accessibilityRole="header">反诈智能问答</Text>
         <View style={styles.tagContainer}>
@@ -185,5 +192,8 @@ const styles = StyleSheet.create({
   input: { flex: 1, backgroundColor: '#f5f5f5', borderRadius: 28, paddingHorizontal: 16, paddingVertical: 14, fontSize: 20, maxHeight: 120, minHeight: 56 },
   voiceBtn: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#f5f5f5', justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
   sendBtn: { backgroundColor: '#D32F2F', borderRadius: 28, paddingHorizontal: 26, justifyContent: 'center', height: 56, marginLeft: 10 },
-  sendBtnText: { color: 'white', fontSize: 20, fontWeight: 'bold' }
+  sendBtnText: { color: 'white', fontSize: 20, fontWeight: 'bold' },
+  backBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: '#f0f2f5' },
+  backBtn: { paddingVertical: 6, paddingRight: 12, minHeight: 44, justifyContent: 'center' },
+  backBtnText: { fontSize: 20, color: '#1976D2', fontWeight: 'bold' },
 });

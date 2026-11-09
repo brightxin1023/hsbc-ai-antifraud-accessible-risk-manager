@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { detectFraudApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
 
-export default function ScriptDetectScreen() {
+export default function ScriptDetectScreen({ onBack }: any) {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -52,6 +52,11 @@ export default function ScriptDetectScreen() {
           showsVerticalScrollIndicator={false}
           keyboardDismissMode="on-drag" // 滑动页面时自动收起键盘
         >
+          {onBack ? (
+            <Pressable onPress={onBack} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="返回工具箱">
+              <Text style={styles.backBtnText}>← 返回工具箱</Text>
+            </Pressable>
+          ) : null}
           <View style={styles.headerBox}>
             <Text style={styles.pageTitle} accessibilityRole="header">📩 涉诈剧本扫描</Text>
             <Text style={styles.description}>收到奇怪的短信、微信或电话录音转写？请直接粘贴到这里。智能风控系统将进行端侧风险分级研判，帮您识破骗局。</Text>
@@ -117,4 +122,6 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', marginBottom: 12, alignItems: 'flex-start' },
   resultLabel: { fontSize: 18, fontWeight: 'bold', width: 95, lineHeight: 26 },
   resultValue: { fontSize: 18, fontWeight: 'bold', flex: 1, lineHeight: 28 },
+  backBtn: { paddingVertical: 6, paddingRight: 12, minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start', marginBottom: 12 },
+  backBtnText: { fontSize: 20, color: '#1976D2', fontWeight: 'bold' },
 });

@@ -5,12 +5,11 @@ import BottomNav from '../components/BottomNav';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import TransferScreen from '../screens/TransferScreen';
-import QAScreen from '../screens/QAScreen';
 import EduListScreen from '../screens/EduListScreen';
 import EduDetailScreen from '../screens/EduDetailScreen';
-import ScriptDetectScreen from '../screens/ScriptDetectScreen';
 import TransactionHistoryScreen from '../screens/TransactionHistoryScreen';
 import MyProfileScreen from '../screens/MyProfileScreen';
+import ToolsScreen from '../screens/ToolsScreen';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -82,8 +81,7 @@ export default function App() {
               />
             )}
             
-            {currentPage === 'toolbox' && <ScriptDetectScreen />}
-            {currentPage === 'qa' && <QAScreen />}
+            {currentPage === 'tools' && <ToolsScreen />}
             {currentPage === 'edu' && <EduListScreen onSelectArticle={(article) => setSelectedArticle(article)} />}
             {currentPage === 'profile' && (
               <MyProfileScreen userPhone={userPhone} onLogout={handleLogout} />

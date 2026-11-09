@@ -5,7 +5,7 @@ export default function BottomNav({ currentPage, setCurrentPage }: any) {
   const tabs = [
     { key: 'home', label: '首页', icon: '🏠' },
     { key: 'transfer', label: '转账', icon: '💸' },
-    { key: 'toolbox', label: '工具箱', icon: '🧰' },
+    { key: 'tools', label: '工具箱', icon: '🧰' },
     { key: 'edu', label: '科普', icon: '📖' },
     { key: 'profile', label: '我的', icon: '👤' },
   ];
