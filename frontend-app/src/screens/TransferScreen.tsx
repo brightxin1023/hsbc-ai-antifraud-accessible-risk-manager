@@ -25,6 +25,16 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     setAlertConfig({ visible: true, title, message, buttons });
   };
 
+  // 辅助函数：生成大厂标准交易时间（如：10-24 14:30）
+  const getFormattedTime = () => {
+    const date = new Date();
+    const MM = String(date.getMonth() + 1).padStart(2, '0');
+    const DD = String(date.getDate()).padStart(2, '0');
+    const HH = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    return `${MM}-${DD} ${HH}:${mm}`;
+  };
+
   const triggerHaptic = (level: 'low' | 'medium' | 'high') => {
     if (level === 'low') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -52,7 +62,6 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
 
   const checkFraud = async () => {
     Keyboard.dismiss();
-    // 替换为自定义弹窗
     if (!payee || !cardNo || !amount) return showAlert("提示", "请填写完整的户名、账号和转账金额");
     if (cardNo.length < 8) return showAlert("提示", "账号位数不正确，请输入 8 位以上测试账号");
 
@@ -83,7 +92,6 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
       triggerHaptic(finalResult.risk_level as 'high' | 'medium' | 'low');
       setModalVisible(true);
     } catch (error) {
-      // 替换为自定义弹窗
       showAlert("网络错误", "无法连接到后端服务，请检查网络后重试。");
     } finally {
       setLoading(false);
@@ -92,7 +100,16 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
 
   const executeTransfer = async (isForced: boolean) => {
     setModalVisible(false);
-    addTransaction({ id: Date.now(), title: `转账 - ${payee}`, time: '刚刚', amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, isExpense: true, isAbnormal: false, isRisk: resultData?.risk_level });
+    // 使用精准时间替换 '刚刚'
+    addTransaction({ 
+      id: Date.now(), 
+      title: `转账 - ${payee}`, 
+      time: getFormattedTime(), 
+      amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, 
+      isExpense: true, 
+      isAbnormal: false, 
+      isRisk: resultData?.risk_level 
+    });
     if (isForced) {
       if (resultData?.risk_level === 'high') {
         await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone);
@@ -111,11 +128,18 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     setModalVisible(false);
     onFreeze();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
-    addTransaction({ id: Date.now(), title: `转账 - ${payee}`, time: '刚刚', amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, isExpense: true, isAbnormal: true });
+    // 使用精准时间替换 '刚刚'
+    addTransaction({ 
+      id: Date.now(), 
+      title: `转账 - ${payee}`, 
+      time: getFormattedTime(), 
+      amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, 
+      isExpense: true, 
+      isAbnormal: true 
+    });
     
     if (resultData?.risk_level === 'high') {
       await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone);
-      // 替换为自定义弹窗
       showAlert(
         "🛡️ 资金已进入保护状态", 
         "系统已为您阻断交易。同时，已自动向您的紧急联系人【辛先生】发送了拦截通知。如需解冻，请呼叫人工客服核实身份。", 
@@ -308,7 +332,6 @@ const styles = StyleSheet.create({
   buttonText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
   securityTip: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 20, lineHeight: 24 },
   
-  // 风控结果弹窗整体样式
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { width: '100%', borderRadius: 20, padding: 30, alignItems: 'center', elevation: 10 },
   modalIcon: { fontSize: 70, marginBottom: 15 },

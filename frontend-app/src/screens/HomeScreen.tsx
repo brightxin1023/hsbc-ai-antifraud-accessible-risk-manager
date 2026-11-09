@@ -191,7 +191,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
                   )}
                   <View style={styles.amountTextWrapper}>
                     {/* 收入金额颜色改为更深邃的绿色，异常拦截金额改为深灰色 */}
-                    <Text style={[styles.txAmount, isExpense ? { color: '#333' } : { color: '#2E7D32' }, tx.isAbnormal && { color: '#666' }]}>
+                    <Text style={[styles.txAmount, isExpense ? { color: '#333' } : { color: '#2E7D32' }, tx.isAbnormal && { color: '#666', opacity: 0.7 }]}>
                       {cleanAmount}
                     </Text>
                     {tx.isAbnormal && (<View style={styles.redStrikethrough} />)}
