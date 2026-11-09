@@ -65,7 +65,7 @@ export default function ScriptDetectScreen({ onBack }: any) {
           <TextInput
             style={styles.input}
             placeholder="请粘贴可疑文本，例如：我是公安局的，你的卡涉嫌洗钱..."
-            placeholderTextColor="#999"
+            placeholderTextColor="#767676"
             multiline
             textAlignVertical="top"
             value={inputText}
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   pageTitle: { fontSize: 28, fontWeight: 'bold', color: '#333', marginBottom: 10 },
   description: { fontSize: 18, color: '#666', lineHeight: 28 },
   input: { backgroundColor: 'white', borderRadius: 12, padding: 18, fontSize: 20, minHeight: 200, marginBottom: 20, borderWidth: 1, borderColor: '#eee' },
-  actionBtn: { backgroundColor: '#1976D2', padding: 20, borderRadius: 12, alignItems: 'center', marginBottom: 25, minHeight: 60 },
+  actionBtn: { backgroundColor: '#1565C0', padding: 20, borderRadius: 12, alignItems: 'center', marginBottom: 25, minHeight: 60 },
   buttonText: { color: 'white', fontSize: 20, fontWeight: 'bold' },
   resultCard: { padding: 20, borderRadius: 12, borderWidth: 2, elevation: 2 },
   resultTitle: { fontSize: 20, fontWeight: 'bold', flex: 1, lineHeight: 28 },
@@ -123,5 +123,5 @@ const styles = StyleSheet.create({
   resultLabel: { fontSize: 18, fontWeight: 'bold', width: 95, lineHeight: 26 },
   resultValue: { fontSize: 18, fontWeight: 'bold', flex: 1, lineHeight: 28 },
   backBtn: { paddingVertical: 6, paddingRight: 12, minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start', marginBottom: 12 },
-  backBtnText: { fontSize: 20, color: '#1976D2', fontWeight: 'bold' },
+  backBtnText: { fontSize: 20, color: '#1565C0', fontWeight: 'bold' },
 });

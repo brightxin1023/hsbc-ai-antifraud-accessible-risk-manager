@@ -195,5 +195,5 @@ const styles = StyleSheet.create({
   sendBtnText: { color: 'white', fontSize: 20, fontWeight: 'bold' },
   backBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: '#f0f2f5' },
   backBtn: { paddingVertical: 6, paddingRight: 12, minHeight: 44, justifyContent: 'center' },
-  backBtnText: { fontSize: 20, color: '#1976D2', fontWeight: 'bold' },
+  backBtnText: { fontSize: 20, color: '#1565C0', fontWeight: 'bold' },
 });

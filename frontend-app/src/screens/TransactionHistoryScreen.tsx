@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
   header: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#eee' },
   backBtn: { paddingVertical: 6, paddingRight: 12, minHeight: 44, justifyContent: 'center' },
-  backBtnText: { fontSize: 20, color: '#1976D2', fontWeight: 'bold' },
+  backBtnText: { fontSize: 20, color: '#1565C0', fontWeight: 'bold' },
   headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#333', flex: 1, textAlign: 'center', marginRight: 44 },
   listWrap: { flex: 1, backgroundColor: 'white', borderRadius: 12, margin: 20, overflow: 'hidden' },
   listItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20 },
