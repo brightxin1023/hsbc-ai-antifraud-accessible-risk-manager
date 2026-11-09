@@ -75,7 +75,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
           if (isLargeAmount) reasons.push('大额');
           if (isMissingNote) reasons.push('无附言');
           const frontendReason = `检测到${reasons.join('且')}转账，存在潜在风险。`;
-          finalResult.suggestion = aiRiskLevel === 'medium' ? `${frontendReason} 此外，AI研判发现：${aiSuggestion}` : `${frontendReason} 系统对附言分析为低风险，但仍请您务必核实收款人身份。`;
+          finalResult.suggestion = aiRiskLevel === 'medium' ? `${frontendReason} 此外，管家研判发现：${aiSuggestion}` : `${frontendReason} 系统对附言分析为低风险，但仍请您务必核实收款人身份。`;
         }
       }
       if (finalResult.risk_level === 'low' && (!finalResult.scam_type || finalResult.scam_type === '无')) finalResult.scam_type = '低风险';
@@ -165,7 +165,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
         >
           
           <Text style={styles.pageTitle} accessibilityRole="header">账号转账</Text>
-          <Text style={styles.pageSubtitle}>您的资金安全由 AI 实时保护</Text>
+          <Text style={styles.pageSubtitle}>智能风控引擎，守护您的每一笔资金</Text>
 
           <View style={styles.formCard}>
             <Text style={styles.label}>收款人户名</Text>
@@ -233,7 +233,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
           </Pressable>
 
           <Text style={styles.securityTip}>
-            🔒 本笔转账受 AI 盾实时风控保护，如遇诈骗请立即挂断并拨打 <Text style={{ color: '#D32F2F', fontWeight: 'bold' }}>96110</Text>。
+            🔒 本笔转账受智能反诈管家实时风控保护，如遇诈骗请立即挂断并拨打 <Text style={{ color: '#D32F2F', fontWeight: 'bold' }}>96110</Text>。
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -252,7 +252,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             </View>
             
             <View style={styles.modalInfoBox}>
-              <Text style={[styles.modalLabel, { color: theme.text }]}>AI 建议：</Text>
+              <Text style={[styles.modalLabel, { color: theme.text }]}>管家建议：</Text>
               <Text style={[styles.modalValue, { color: theme.text }]}>{resultData?.suggestion}</Text>
             </View>
 

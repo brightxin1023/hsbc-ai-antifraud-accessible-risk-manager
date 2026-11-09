@@ -177,8 +177,10 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
+        
+        {/* 🌟 核心修改：大厂风格的头部排版 */}
         <Text style={styles.title} accessibilityRole="header">{isLoginMode ? '欢迎回来' : '创建新账户'}</Text>
-        <Text style={styles.subtitle}>AI 反诈盾，守护您的资金安全</Text>
+        <Text style={styles.subtitle}>有爱无碍 · 智能反诈管家</Text>
 
         <View style={styles.card}>
           
@@ -319,8 +321,12 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
   scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 20 },
-  title: { fontSize: 36, fontWeight: 'bold', color: '#2E7D32', textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 18, color: '#666', textAlign: 'center', marginBottom: 35 },
+  
+  // 🌟 大厂级主标题：极简高级黑
+  title: { fontSize: 36, fontWeight: 'bold', color: '#1A1A1A', textAlign: 'center', marginBottom: 12 },
+  // 🌟 品牌Slogan：安全绿 + 加粗 + 字间距
+  subtitle: { fontSize: 20, color: '#2E7D32', fontWeight: 'bold', textAlign: 'center', marginBottom: 35, letterSpacing: 1 },
+  
   card: { backgroundColor: 'white', padding: 30, borderRadius: 16, elevation: 4 },
   label: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#333' },
   input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 12, paddingVertical: 16, paddingHorizontal: 15, fontSize: 22, marginBottom: 20, backgroundColor: '#fafafa', minHeight: 60 },

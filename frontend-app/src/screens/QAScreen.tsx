@@ -13,7 +13,7 @@ const BOTTOM_NAV_HEIGHT = 80;
 export default function QAScreen() {
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<Message[]>([
-    { id: '0', role: 'ai', content: '您好！我是您的专属反诈 AI 助手。您可以问我任何拿不准的转账、短信或电话情况，我将基于最新诈骗话术库为您解答。' }
+    { id: '0', role: 'ai', content: '您好！我是您的专属智能反诈助手。您可以问我任何拿不准的转账、短信或电话情况，我将基于最新诈骗话术库为您解答。' }
   ]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -95,7 +95,7 @@ export default function QAScreen() {
   const renderItem = ({ item }: { item: Message }) => (
     <View style={[styles.msgRow, item.role === 'user' ? styles.msgRowUser : styles.msgRowAi]}>
       {item.role === 'ai' && <Text style={styles.avatar} accessible={false}>🛡️</Text>}
-      <View style={[styles.bubble, item.role === 'user' ? styles.bubbleUser : styles.bubbleAi]} accessible={true} accessibilityLabel={item.role === 'user' ? `我说：${item.content}` : `AI助手说：${item.content}`}>
+      <View style={[styles.bubble, item.role === 'user' ? styles.bubbleUser : styles.bubbleAi]} accessible={true} accessibilityLabel={item.role === 'user' ? `我说：${item.content}` : `智能反诈助手说：${item.content}`}>
         <Text style={item.role === 'user' ? styles.textUser : styles.textAi}>{item.content}</Text>
       </View>
     </View>
@@ -125,7 +125,7 @@ export default function QAScreen() {
             <Text style={styles.avatar} accessible={false}>🛡️</Text>
             <View style={[styles.bubble, styles.bubbleAi, { flexDirection: 'row', alignItems: 'center' }]}>
               <ActivityIndicator size="small" color="#D32F2F" />
-              <Text style={[styles.textAi, { marginLeft: 8 }]}>AI 正在分析话术库...</Text>
+              <Text style={[styles.textAi, { marginLeft: 8 }]}>智能助手正在分析话术库...</Text>
             </View>
           </View>
         ) : undefined}
@@ -135,7 +135,7 @@ export default function QAScreen() {
         <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
-            placeholder={isRecording ? "🔴 正在聆听..." : "遇到不懂的套路？直接问 AI 助手"}
+            placeholder={isRecording ? "🔴 正在聆听..." : "遇到不懂的套路？直接问智能反诈助手"}
             placeholderTextColor={isRecording ? "#D32F2F" : "#999"}
             multiline
             value={inputText}

@@ -54,7 +54,7 @@ export default function ScriptDetectScreen() {
         >
           <View style={styles.headerBox}>
             <Text style={styles.pageTitle} accessibilityRole="header">📩 涉诈剧本扫描</Text>
-            <Text style={styles.description}>收到奇怪的短信、微信或电话录音转写？请直接粘贴到这里。AI 将进行端侧风险分级研判，帮您识破骗局。</Text>
+            <Text style={styles.description}>收到奇怪的短信、微信或电话录音转写？请直接粘贴到这里。智能风控系统将进行端侧风险分级研判，帮您识破骗局。</Text>
           </View>
 
           <TextInput
@@ -69,7 +69,7 @@ export default function ScriptDetectScreen() {
           />
 
           <Pressable style={[styles.actionBtn, loading && { opacity: 0.7 }]} onPress={checkScript} disabled={loading} accessibilityRole="button" accessibilityLabel="开始 AI 剧本扫描" accessibilityState={{ disabled: loading, busy: loading }}>
-            {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>开始 AI 剧本扫描</Text>}
+            {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>一键智能研判</Text>}
           </Pressable>
 
           {result && (
@@ -83,7 +83,7 @@ export default function ScriptDetectScreen() {
                 <Text style={[styles.resultValue, { color: theme.text }]}>{result.scam_type}</Text>
               </View>
               <View style={styles.infoRow}>
-                <Text style={[styles.resultLabel, { color: theme.text }]}>AI 建议：</Text>
+                <Text style={[styles.resultLabel, { color: theme.text }]}>管家建议：</Text>
                 <Text style={[styles.resultValue, { color: theme.text }]}>{result.suggestion}</Text>
               </View>
             </View>
