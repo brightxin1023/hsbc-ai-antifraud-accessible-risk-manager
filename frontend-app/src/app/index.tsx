@@ -70,7 +70,7 @@ export default function App() {
             {currentPage === 'transfer' && (
               <TransferScreen 
                 onFreeze={() => setIsFrozen(true)} onUnfreeze={() => setIsFrozen(false)} 
-                addTransaction={addTransaction} userPhone={userPhone}
+                addTransaction={addTransaction} userPhone={userPhone} isFrozen={isFrozen}
               />
             )}
             

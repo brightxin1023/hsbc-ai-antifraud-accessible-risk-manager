@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { detectFraudApi, alertFamilyApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
 
-export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, userPhone }: any) {
+export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, userPhone, isFrozen }: any) {
   const [payee, setPayee] = useState('');
   const [cardNo, setCardNo] = useState('');
   const [amount, setAmount] = useState('');
@@ -15,17 +15,13 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
   const [modalVisible, setModalVisible] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
 
-  // 控制全局自定义弹窗的配置状态
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
-
   const scrollViewRef = useRef<any>(null);
 
-  // 辅助函数：快速唤起自定义弹窗
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: '知道了' }]) => {
     setAlertConfig({ visible: true, title, message, buttons });
   };
 
-  // 辅助函数：生成大厂标准交易时间（如：10-24 14:30）
   const getFormattedTime = () => {
     const date = new Date();
     const MM = String(date.getMonth() + 1).padStart(2, '0');
@@ -62,6 +58,35 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
 
   const checkFraud = async () => {
     Keyboard.dismiss();
+    
+    // 核心修复：如果账户处于冻结状态，直接弹窗拦截，阻止往下执行
+    if (isFrozen) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      return showAlert(
+        "🛡️ 账户已被保护性冻结", 
+        "检测到您的账户存在高危风险，出账功能已暂停。为保障资金安全，如需继续转账，请先呼叫人工客服核实身份并解除冻结。", 
+        [
+          { text: "稍后处理", style: "cancel" },
+          { 
+            text: "📞 呼叫人工客服解冻", 
+            onPress: () => {
+              showAlert(
+                "📞 正在接通", 
+                "正在为您转接反诈专属人工客服...", 
+                [{ 
+                  text: "OK", 
+                  onPress: () => {
+                    onUnfreeze(); // 调用父组件解除冻结
+                    showAlert("✅ 解冻成功", "人工客服已为您核实身份，账户已恢复正常使用。");
+                  } 
+                }]
+              );
+            } 
+          }
+        ]
+      );
+    }
+
     if (!payee || !cardNo || !amount) return showAlert("提示", "请填写完整的户名、账号和转账金额");
     if (cardNo.length < 8) return showAlert("提示", "账号位数不正确，请输入 8 位以上测试账号");
 
@@ -100,16 +125,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
 
   const executeTransfer = async (isForced: boolean) => {
     setModalVisible(false);
-    // 使用精准时间替换 '刚刚'
-    addTransaction({ 
-      id: Date.now(), 
-      title: `转账 - ${payee}`, 
-      time: getFormattedTime(), 
-      amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, 
-      isExpense: true, 
-      isAbnormal: false, 
-      isRisk: resultData?.risk_level 
-    });
+    addTransaction({ id: Date.now(), title: `转账 - ${payee}`, time: getFormattedTime(), amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, isExpense: true, isAbnormal: false, isRisk: resultData?.risk_level });
     if (isForced) {
       if (resultData?.risk_level === 'high') {
         await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone);
@@ -128,15 +144,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     setModalVisible(false);
     onFreeze();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
-    // 使用精准时间替换 '刚刚'
-    addTransaction({ 
-      id: Date.now(), 
-      title: `转账 - ${payee}`, 
-      time: getFormattedTime(), 
-      amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, 
-      isExpense: true, 
-      isAbnormal: true 
-    });
+    addTransaction({ id: Date.now(), title: `转账 - ${payee}`, time: getFormattedTime(), amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, isExpense: true, isAbnormal: true });
     
     if (resultData?.risk_level === 'high') {
       await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone);
@@ -261,7 +269,6 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* 风控结果弹窗 */}
       <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View style={styles.modalOverlay} accessibilityViewIsModal={true}>
           <View style={[styles.modalContent, { backgroundColor: theme.bg }]} accessibilityLiveRegion="assertive">
@@ -299,7 +306,6 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
         </View>
       </Modal>
 
-      {/* 全局通用的系统级弹窗 */}
       <CustomAlert
         visible={alertConfig.visible}
         title={alertConfig.title}
