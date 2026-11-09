@@ -44,7 +44,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
         setIsPhoneRecording(false);
         setPhone('13800138000'); 
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-        showAlert("✅ 识别成功", "已为您自动填入手机号：13800138000");
+        showAlert("识别成功", "已为您自动填入手机号：13800138000");
       }, 10000);
     }
     return () => {
@@ -91,7 +91,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
       setShowVoiceModal(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       
-      showAlert("✅ 声纹匹配成功", "系统已成功验证您的动态口令，为您安全登录。", [
+      showAlert("声纹匹配成功", "系统已成功验证您的动态口令，为您安全登录。", [
         { text: "进入应用", onPress: () => onLogin(phone) }
       ]);
     } catch (error) {
@@ -145,7 +145,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
       try {
         await registerApi(phone, password);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-        showAlert("✅ 注册成功", "请使用刚刚的密码进行登录", [
+        showAlert("注册成功", "请使用刚刚的密码进行登录", [
           { text: "去登录", onPress: () => { setIsLoginMode(true); setPassword(''); setConfirmPassword(''); } }
         ]);
       } catch (error: any) {
@@ -188,7 +188,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
             <TextInput 
               style={[styles.input, { flex: 1, marginBottom: 0 }]} 
               placeholder="请输入 11 位手机号" 
-              placeholderTextColor="#aaa" 
+              placeholderTextColor="#767676" 
               keyboardType="phone-pad" 
               maxLength={11} 
               value={phone} 
@@ -212,7 +212,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
             <TextInput 
               style={styles.passwordInput} 
               placeholder="输入 6 位数字密码" 
-              placeholderTextColor="#aaa" 
+              placeholderTextColor="#767676" 
               secureTextEntry={!showPassword} 
               value={password} 
               onChangeText={setPassword} 
@@ -232,7 +232,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
                 <TextInput 
                   style={styles.passwordInput} 
                   placeholder="请再次输入 6 位数字密码" 
-                  placeholderTextColor="#aaa" 
+                  placeholderTextColor="#767676" 
                   secureTextEntry={!showConfirmPassword} 
                   value={confirmPassword} 
                   onChangeText={setConfirmPassword} 
@@ -257,7 +257,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
                 accessibilityRole="button"
                 accessibilityLabel="语音安全验证"
               >
-                {loading ? <ActivityIndicator color="white" /> : <Text style={styles.voiceBtnText}>{isRecording ? '🔴 正在聆听...' : '🎙️ 语音安全验证'}</Text>}
+                {loading ? <ActivityIndicator color="white" /> : <Text style={styles.voiceBtnText}>{isRecording ? '正在聆听...' : '语音安全验证'}</Text>}
               </Pressable>
             </View>
           )}
@@ -277,7 +277,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
         <View style={styles.modalOverlay} accessibilityViewIsModal={true} accessibilityLiveRegion="assertive">
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {isPhoneRecording ? '🎙️ 正在识别手机号' : '🎙️ 正在采集声纹'}
+              {isPhoneRecording ? '正在识别手机号' : '正在采集声纹'}
             </Text>
             <Text style={styles.modalSubtitle}>
               {isPhoneRecording ? '请用普通话大声念出您的 11 位手机号' : '请用普通话大声读出您密码后四位中缺失的最后两位'}
@@ -285,7 +285,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
             
             {isPhoneRecording ? (
               <View style={{ marginVertical: 30, alignItems: 'center' }}>
-                <Text style={{ fontSize: 60, color: '#1976D2', marginBottom: 20 }} accessible={false}>📞</Text>
+                <Text style={{ fontSize: 60, color: '#1565C0', marginBottom: 20 }} accessible={false}>📞</Text>
                 <Text style={styles.countdownText} accessibilityLiveRegion="polite">录音倒计时: {phoneCountdown} 秒</Text>
               </View>
             ) : (
@@ -305,7 +305,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
         </View>
       </Modal>
 
-      {/*全局自定义弹窗 */}
+      {/* 全局自定义弹窗 */}
       <CustomAlert
         visible={alertConfig.visible}
         title={alertConfig.title}
@@ -326,20 +326,20 @@ const styles = StyleSheet.create({
   label: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#333' },
   input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 12, paddingVertical: 16, paddingHorizontal: 15, fontSize: 22, marginBottom: 20, backgroundColor: '#fafafa', minHeight: 60 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
-  phoneVoiceBtn: { backgroundColor: '#1976D2', width: 56, height: 56, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  phoneVoiceBtn: { backgroundColor: '#1565C0', width: 56, height: 56, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   phoneVoiceIcon: { fontSize: 28 },
   passwordContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#ddd', borderRadius: 12, backgroundColor: '#fafafa', marginBottom: 20, paddingRight: 15, minHeight: 60 },
   passwordInput: { flex: 1, paddingVertical: 16, paddingHorizontal: 15, fontSize: 22 },
   eyeBtn: { padding: 8 },
   eyeIcon: { fontSize: 28 },
   accessibilityBox: { marginBottom: 25, padding: 20, backgroundColor: '#E3F2FD', borderRadius: 12, borderWidth: 1, borderColor: '#90CAF9' },
-  accessibilityText: { fontSize: 18, color: '#1976D2', fontWeight: 'bold', marginBottom: 15, textAlign: 'center' },
-  voiceBtn: { backgroundColor: '#1976D2', paddingVertical: 16, borderRadius: 10, alignItems: 'center', minHeight: 60, justifyContent: 'center' },
+  accessibilityText: { fontSize: 18, color: '#1565C0', fontWeight: 'bold', marginBottom: 15, textAlign: 'center' },
+  voiceBtn: { backgroundColor: '#1565C0', paddingVertical: 16, borderRadius: 10, alignItems: 'center', minHeight: 60, justifyContent: 'center' },
   voiceBtnText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
   actionBtn: { backgroundColor: '#D32F2F', paddingVertical: 20, borderRadius: 12, alignItems: 'center', marginBottom: 20, minHeight: 64, justifyContent: 'center' },
   actionBtnText: { color: 'white', fontSize: 24, fontWeight: 'bold' },
   switchBtn: { alignItems: 'center', paddingVertical: 12 },
-  switchText: { color: '#1976D2', fontSize: 18, fontWeight: '500' },
+  switchText: { color: '#1565C0', fontSize: 18, fontWeight: '500' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { backgroundColor: 'white', width: '90%', borderRadius: 24, padding: 35, alignItems: 'center' },
   modalTitle: { fontSize: 30, fontWeight: 'bold', color: '#D32F2F', marginBottom: 15 },

@@ -86,7 +86,7 @@ export default function QAScreen() {
       setMessages(prev => [...prev, aiMsg]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     } catch (error) {
-      showAlert("网络错误", "无法连接到 AI 服务");
+      showAlert("网络错误", "无法连接到智能服务，请稍后重试");
     } finally {
       setLoading(false);
     }
@@ -135,8 +135,8 @@ export default function QAScreen() {
         <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
-            placeholder={isRecording ? "🔴 正在聆听..." : "遇到不懂的套路？直接问智能反诈助手"}
-            placeholderTextColor={isRecording ? "#D32F2F" : "#999"}
+            placeholder={isRecording ? "正在聆听..." : "遇到不懂的套路？直接问智能反诈助手"}
+            placeholderTextColor={isRecording ? "#D32F2F" : "#767676"}
             multiline
             value={inputText}
             onChangeText={setInputText}
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   header: { paddingVertical: 15, backgroundColor: '#f0f2f5', alignItems: 'center', borderBottomWidth: 0.5, borderBottomColor: '#ddd' },
   headerTitle: { fontSize: 28, fontWeight: 'bold', color: '#333' },
   tagContainer: { backgroundColor: '#E3F2FD', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, marginTop: 8 },
-  tagText: { fontSize: 16, color: '#1976D2', fontWeight: 'bold' },
+  tagText: { fontSize: 16, color: '#1565C0', fontWeight: 'bold' },
   chatArea: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10 },
   msgRow: { flexDirection: 'row', marginBottom: 20, alignItems: 'flex-start' },
   msgRowUser: { justifyContent: 'flex-end' },

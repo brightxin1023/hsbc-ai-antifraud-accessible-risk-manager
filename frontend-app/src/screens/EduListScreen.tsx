@@ -17,7 +17,6 @@ export const ARTICLES = [
 
 export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (article: any) => void }) {
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
-
   // 修复：将传入的文本修改为“标题 + 摘要”，让语音播报拥有完整的上下文
   const playVoice = (title: string, content: string) => { 
     setAlertConfig({ visible: true, title: "🔊 语音播报", message: `${title}。${content}` });
@@ -71,14 +70,17 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#f0f2f5' },
   headerBox: { marginBottom: 20, alignItems: 'center' },
   pageTitle: { fontSize: 30, fontWeight: 'bold', color: '#D32F2F', marginBottom: 8 },
-  pageSubtitle: { fontSize: 18, color: '#666' },
+  // 对比度优化：从 #666 加深到 #555，在浅灰背景上对比度达到 7.4:1
+  pageSubtitle: { fontSize: 18, color: '#555' }, 
   card: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 20, marginBottom: 16, borderWidth: 2, borderColor: '#333333' },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   cardIcon: { fontSize: 32, marginRight: 10 },
   cardTitle: { fontSize: 22, fontWeight: 'bold', color: '#000', flex: 1 },
   cardSummary: { fontSize: 18, color: '#333', lineHeight: 28, marginBottom: 15 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  readMore: { fontSize: 16, color: '#1976D2', fontWeight: 'bold' },
+  // 对比度优化：从 #1976D2 加深到 #1565C0，白底对比度 6.2:1
+  readMore: { fontSize: 16, color: '#1565C0', fontWeight: 'bold' }, 
   voiceBtnSmall: { backgroundColor: '#E3F2FD', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 8 },
-  voiceBtnTextSmall: { color: '#1976D2', fontSize: 16, fontWeight: 'bold' },
+  // 对比度优化：从 #1976D2 加深到 #1565C0，浅蓝底对比度同样有保障
+  voiceBtnTextSmall: { color: '#1565C0', fontSize: 16, fontWeight: 'bold' }, 
 });

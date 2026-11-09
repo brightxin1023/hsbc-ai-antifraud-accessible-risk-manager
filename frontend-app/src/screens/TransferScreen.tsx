@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet, Modal, KeyboardAvoidingView, Platform, Keyboard, ScrollView } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { detectFraudApi, alertFamilyApi } from '../services/api';
-// 🌟 引入刚刚封装的自定义大字版弹窗组件
 import CustomAlert from '../components/CustomAlert';
 
 export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, userPhone }: any) {
@@ -16,7 +15,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
   const [modalVisible, setModalVisible] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
 
-  // 🌟 新增：控制全局自定义弹窗的配置状态
+  // 控制全局自定义弹窗的配置状态
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
 
   const scrollViewRef = useRef<any>(null);
@@ -172,7 +171,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             <TextInput 
               style={styles.input} 
               placeholder="收款人户名/企业账户名" 
-              placeholderTextColor="#ccc" 
+              placeholderTextColor="#767676" 
               value={payee} 
               onChangeText={setPayee} 
               accessibilityLabel="收款人户名输入框"
@@ -182,7 +181,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             <TextInput 
               style={styles.input} 
               placeholder="银行卡号/信用卡号/企业账号" 
-              placeholderTextColor="#ccc" 
+              placeholderTextColor="#767676" 
               keyboardType="number-pad" 
               maxLength={19} 
               value={cardNo} 
@@ -202,7 +201,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
               <TextInput 
                 style={styles.amountInput} 
                 placeholder="0.00" 
-                placeholderTextColor="#ccc" 
+                placeholderTextColor="#767676" 
                 keyboardType="decimal-pad" 
                 value={amount} 
                 onChangeText={setAmount} 
@@ -214,7 +213,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             <TextInput 
               style={styles.textArea} 
               placeholder="选填。可填写转账目的、备忘信息等。若对方要求你转账，可填入对方的目的或话术。" 
-              placeholderTextColor="#ccc" 
+              placeholderTextColor="#767676" 
               multiline 
               textAlignVertical="top" 
               value={note} 
@@ -238,7 +237,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* 风控结果弹窗（这是你的全屏大字彩色弹窗，保持原样） */}
+      {/* 风控结果弹窗 */}
       <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View style={styles.modalOverlay} accessibilityViewIsModal={true}>
           <View style={[styles.modalContent, { backgroundColor: theme.bg }]} accessibilityLiveRegion="assertive">
@@ -276,7 +275,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
         </View>
       </Modal>
 
-      {/* 🌟 全局通用的系统级弹窗（替代 Alert） */}
+      {/* 全局通用的系统级弹窗 */}
       <CustomAlert
         visible={alertConfig.visible}
         title={alertConfig.title}

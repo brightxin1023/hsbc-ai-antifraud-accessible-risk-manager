@@ -35,13 +35,9 @@ export default function BottomNav({ currentPage, setCurrentPage }: any) {
 }
 
 const styles = StyleSheet.create({
-  // 优化：加大顶部和底部的 padding，让菜单栏更饱满，触摸区域更大
   navBar: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 10, paddingBottom: 25, backgroundColor: 'white', borderTopWidth: 1, borderColor: '#eee' },
-  // 优化：确保每个 tab 的点击高度至少 50pt
   navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 50 }, 
-  // 优化：单独提取图标样式并放大
   navIcon: { fontSize: 24, marginBottom: 2 },
-  // 优化：字号从 14 放大到 16
-  navText: { fontSize: 16, color: '#666' },
-  navTextActive: { color: '#D32F2F', fontWeight: 'bold' },
+  navText: { fontSize: 16, color: '#555' }, 
+  navTextActive: { color: '#B71C1C', fontWeight: 'bold' }, 
 });

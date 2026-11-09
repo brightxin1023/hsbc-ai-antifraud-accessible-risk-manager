@@ -18,13 +18,11 @@ const ARTICLE_DETAILS: any = {
 export default function EduDetailScreen({ articleId, onBack }: { articleId: string, onBack: () => void }) {
   const article = ARTICLE_DETAILS[articleId];
   
-  // 🌟 引入 CustomAlert 的状态管理
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: 'OK' }]) => {
     setAlertConfig({ visible: true, title, message, buttons });
   };
 
-  // 🌟 修复 Bug：去掉了 case 后面多余的手动句号，避免出现“。。”
   const fullVoiceText = article 
     ? `${article.title}。真实案例：${article.case}防骗指南：${article.advice}` 
     : '';
@@ -119,7 +117,6 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      {/* 🌟 全局自定义弹窗 */}
       <CustomAlert
         visible={alertConfig.visible}
         title={alertConfig.title}
@@ -135,8 +132,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
   header: { backgroundColor: '#FFFFFF', paddingVertical: 12, paddingHorizontal: 15, borderBottomWidth: 0.5, borderBottomColor: '#ddd' },
   backBtn: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingVertical: 8, paddingRight: 15 },
-  backIcon: { fontSize: 32, color: '#1976D2', fontWeight: '400', marginTop: -6, marginRight: 4 },
-  backBtnText: { fontSize: 20, color: '#1976D2', fontWeight: '600' },
+  // 对比度优化：箭头从 #1976D2 加深到 #1565C0
+  backIcon: { fontSize: 32, color: '#1565C0', fontWeight: '400', marginTop: -6, marginRight: 4 },
+  // 对比度优化：文字从 #1976D2 加深到 #1565C0
+  backBtnText: { fontSize: 20, color: '#1565C0', fontWeight: '600' },
   content: { padding: 20 },
   largeIcon: { fontSize: 60, textAlign: 'center', marginBottom: 15 },
   title: { fontSize: 26, fontWeight: 'bold', color: '#D32F2F', textAlign: 'center', marginBottom: 25, lineHeight: 36 },
@@ -144,7 +143,8 @@ const styles = StyleSheet.create({
   sectionLabel: { fontSize: 20, fontWeight: 'bold', color: '#D32F2F', marginBottom: 12 },
   text: { fontSize: 18, color: '#222', lineHeight: 32 }, 
   actionRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginTop: 10 },
-  voiceBtn: { flex: 1, backgroundColor: '#1976D2', padding: 18, borderRadius: 12, alignItems: 'center' },
+  // 对比度优化：按钮背景从 #1976D2 加深到 #1565C0，让里面的白字对比度达到 5.7:1
+  voiceBtn: { flex: 1, backgroundColor: '#1565C0', padding: 18, borderRadius: 12, alignItems: 'center' },
   dialBtn: { flex: 1, backgroundColor: '#D32F2F', padding: 18, borderRadius: 12, alignItems: 'center' }, 
   btnText: { color: 'white', fontSize: 20, fontWeight: 'bold' }
 });

@@ -182,7 +182,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
                 
                 <View style={styles.amountContainer}>
                   {isExpense ? (
-                    <View style={[styles.customMinusSign, tx.isAbnormal && { backgroundColor: '#999' }]} />
+                    <View style={[styles.customMinusSign, tx.isAbnormal && { backgroundColor: '#666' }]} />
                   ) : (
                     <View style={styles.customPlusWrapper}>
                       <View style={styles.plusHorizontal} />
@@ -190,7 +190,8 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
                     </View>
                   )}
                   <View style={styles.amountTextWrapper}>
-                    <Text style={[styles.txAmount, isExpense ? { color: '#333' } : { color: '#4CAF50' }, tx.isAbnormal && { color: '#999' }]}>
+                    {/* 收入金额颜色改为更深邃的绿色，异常拦截金额改为深灰色 */}
+                    <Text style={[styles.txAmount, isExpense ? { color: '#333' } : { color: '#2E7D32' }, tx.isAbnormal && { color: '#666' }]}>
                       {cleanAmount}
                     </Text>
                     {tx.isAbnormal && (<View style={styles.redStrikethrough} />)}
@@ -209,7 +210,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         </View>
       </ScrollView>
 
-      {/* 🌟 全局自定义弹窗 */}
+      {/* 全局自定义弹窗 */}
       <CustomAlert
         visible={alertConfig.visible}
         title={alertConfig.title}
@@ -223,44 +224,57 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, backgroundColor: '#f0f2f5' },
+  
   frozenBanner: { backgroundColor: '#FFEBEE', padding: 20, borderRadius: 12, borderWidth: 2, borderColor: '#D32F2F', marginBottom: 20 },
   frozenBannerTitle: { color: '#D32F2F', fontSize: 22, fontWeight: 'bold' },
   frozenBannerText: { color: '#B71C1C', fontSize: 16, lineHeight: 24, marginBottom: 15 },
   appealBtn: { backgroundColor: '#D32F2F', padding: 16, borderRadius: 8, alignItems: 'center' },
   appealBtnText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+  
   headerCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 12, marginBottom: 20, elevation: 4 },
   headerTitle: { color: 'white', fontSize: 24, fontWeight: 'bold' },
-  headerSubtitle: { color: 'white', fontSize: 18, marginTop: 6, opacity: 0.9 },
+  // 对比度优化：去掉 opacity，让白字在绿底上绝对清晰
+  headerSubtitle: { color: 'white', fontSize: 18, marginTop: 6 }, 
   logoutBtn: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   logoutText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+  
   familyCard: { backgroundColor: '#E3F2FD', borderRadius: 12, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: '#BBDEFB' },
   familyTitle: { fontSize: 20, fontWeight: 'bold', color: '#1565C0' },
-  familyDesc: { fontSize: 16, color: '#1976D2', marginTop: 4 },
+  // 对比度优化：将浅蓝加深，提升在浅色背景上的可读性
+  familyDesc: { fontSize: 16, color: '#0D47A1', marginTop: 4 }, 
   familyBtn: { paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
   familyBtnText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+  
   sectionTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 15, color: '#333' },
   listContainer: { backgroundColor: 'white', borderRadius: 12, overflow: 'hidden', marginBottom: 20 },
   listItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20 },
   listItemBorder: { borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   txLeft: { flex: 1 },
   txTitle: { fontSize: 20, fontWeight: '600', color: '#333', marginRight: 8 },
-  txTime: { fontSize: 16, color: '#999', marginTop: 8 },
+  
+  // 对比度优化：时间从 #999 加深到 #666
+  txTime: { fontSize: 16, color: '#666', marginTop: 8 }, 
+  
   amountContainer: { flexDirection: 'row', alignItems: 'center' },
   customMinusSign: { width: 14, height: 2.5, backgroundColor: '#333', marginRight: 6, borderRadius: 1 },
   customPlusWrapper: { width: 14, height: 14, justifyContent: 'center', alignItems: 'center', marginRight: 6 },
-  plusHorizontal: { position: 'absolute', width: 14, height: 2.5, backgroundColor: '#4CAF50', borderRadius: 1 },
-  plusVertical: { position: 'absolute', width: 2.5, height: 14, backgroundColor: '#4CAF50', borderRadius: 1 },
+  // 对比度优化：加号图标同步换成深绿
+  plusHorizontal: { position: 'absolute', width: 14, height: 2.5, backgroundColor: '#2E7D32', borderRadius: 1 },
+  plusVertical: { position: 'absolute', width: 2.5, height: 14, backgroundColor: '#2E7D32', borderRadius: 1 },
   amountTextWrapper: { position: 'relative', justifyContent: 'center', height: 30 },
   txAmount: { fontSize: 24, fontWeight: 'bold', lineHeight: 30 },
   redStrikethrough: { position: 'absolute', left: -2, right: -2, height: 2, backgroundColor: '#FF3B30', top: 14 },
+  
   badgeError: { backgroundColor: '#FFEBEE', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#FFCDD2', marginLeft: 8 },
   badgeErrorText: { fontSize: 14, color: '#D32F2F', fontWeight: 'bold' },
   badgeHighRisk: { backgroundColor: '#D32F2F', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginLeft: 8 },
   badgeHighRiskText: { fontSize: 14, color: '#FFFFFF', fontWeight: 'bold' },
   badgeWarning: { backgroundColor: '#FFF8E1', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#FFE082', marginLeft: 8 },
-  badgeWarningText: { fontSize: 14, color: '#F57F17', fontWeight: 'bold' },
+  // 对比度优化：可疑交易文字从亮橙 #F57F17 加深至深橙 #D84315，确保在白/黄底上清晰可见
+  badgeWarningText: { fontSize: 14, color: '#D84315', fontWeight: 'bold' }, 
   badgeLowRisk: { backgroundColor: '#E8F5E9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#A5D6A7', marginLeft: 8 },
   badgeLowRiskText: { fontSize: 14, color: '#2E7D32', fontWeight: 'bold' },
+  
   serviceBox: { backgroundColor: '#FFF3E0', padding: 20, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#FFE0B2' },
   serviceText: { fontSize: 18, color: '#E65100', marginBottom: 15, fontWeight: 'bold' },
   sosButton: { backgroundColor: '#FF9800', width: '100%', padding: 18, borderRadius: 10, alignItems: 'center' },
