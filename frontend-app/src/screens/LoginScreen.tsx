@@ -178,9 +178,8 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         
-        {/* 🌟 核心修改：大厂风格的头部排版 */}
         <Text style={styles.title} accessibilityRole="header">{isLoginMode ? '欢迎回来' : '创建新账户'}</Text>
-        <Text style={styles.subtitle}>有爱无碍 · 智能反诈管家</Text>
+        <Text style={styles.subtitle}>数字无碍 · 智能反诈管家</Text>
 
         <View style={styles.card}>
           
@@ -306,7 +305,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
         </View>
       </Modal>
 
-      {/* 🌟 全局自定义弹窗 */}
+      {/*全局自定义弹窗 */}
       <CustomAlert
         visible={alertConfig.visible}
         title={alertConfig.title}
@@ -321,12 +320,8 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
   scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 20 },
-  
-  // 🌟 大厂级主标题：极简高级黑
   title: { fontSize: 36, fontWeight: 'bold', color: '#1A1A1A', textAlign: 'center', marginBottom: 12 },
-  // 🌟 品牌Slogan：安全绿 + 加粗 + 字间距
   subtitle: { fontSize: 20, color: '#2E7D32', fontWeight: 'bold', textAlign: 'center', marginBottom: 35, letterSpacing: 1 },
-  
   card: { backgroundColor: 'white', padding: 30, borderRadius: 16, elevation: 4 },
   label: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#333' },
   input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 12, paddingVertical: 16, paddingHorizontal: 15, fontSize: 22, marginBottom: 20, backgroundColor: '#fafafa', minHeight: 60 },
@@ -345,7 +340,6 @@ const styles = StyleSheet.create({
   actionBtnText: { color: 'white', fontSize: 24, fontWeight: 'bold' },
   switchBtn: { alignItems: 'center', paddingVertical: 12 },
   switchText: { color: '#1976D2', fontSize: 18, fontWeight: '500' },
-  
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { backgroundColor: 'white', width: '90%', borderRadius: 24, padding: 35, alignItems: 'center' },
   modalTitle: { fontSize: 30, fontWeight: 'bold', color: '#D32F2F', marginBottom: 15 },

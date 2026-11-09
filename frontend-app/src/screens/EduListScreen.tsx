@@ -18,8 +18,9 @@ export const ARTICLES = [
 export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (article: any) => void }) {
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
 
-  const playVoice = (content: string) => { 
-    setAlertConfig({ visible: true, title: "🔊 语音播报", message: content });
+  // 修复：将传入的文本修改为“标题 + 摘要”，让语音播报拥有完整的上下文
+  const playVoice = (title: string, content: string) => { 
+    setAlertConfig({ visible: true, title: "🔊 语音播报", message: `${title}。${content}` });
   };
 
   return (
@@ -40,7 +41,13 @@ export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (a
             
             <View style={styles.cardFooter}>
               <Text style={styles.readMore}>点击查看真实案例 →</Text>
-              <Pressable style={styles.voiceBtnSmall} onPress={(e) => { e.stopPropagation(); playVoice(article.summary); }} accessibilityRole="button" accessibilityLabel={`语音播报：${article.title}的摘要`}>
+              <Pressable 
+                style={styles.voiceBtnSmall} 
+                // 调用修改后的 playVoice，传入标题和摘要
+                onPress={(e) => { e.stopPropagation(); playVoice(article.title, article.summary); }} 
+                accessibilityRole="button" 
+                accessibilityLabel={`语音播报：${article.title}`}
+              >
                 <Text style={styles.voiceBtnTextSmall}>🔊 语音播报</Text>
               </Pressable>
             </View>
