@@ -103,5 +103,5 @@ const styles = StyleSheet.create({
   textRed: { color: '#D32F2F' },
   
   voiceBtnSmall: { backgroundColor: '#E3F2FD', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 8 },
-  voiceBtnTextSmall: { color: '#1565C0', fontSize: 16, fontWeight: 'bold' }, 
+  voiceBtnTextSmall: { color: '#1565C0', fontSize: 18, fontWeight: 'bold' }, 
 });
