@@ -17,7 +17,6 @@ export const ARTICLES = [
 
 export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (article: any) => void }) {
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
-  // 修复：将传入的文本修改为“标题 + 摘要”，让语音播报拥有完整的上下文
   const playVoice = (title: string, content: string) => { 
     setAlertConfig({ visible: true, title: "🔊 语音播报", message: `${title}。${content}` });
   };
@@ -30,28 +29,48 @@ export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (a
           <Text style={styles.pageSubtitle}>全民反诈，守护您的钱袋子</Text>
         </View>
 
-        {ARTICLES.map((article) => (
-          <Pressable key={article.id} style={styles.card} onPress={() => onSelectArticle(article)} accessibilityRole="button" accessibilityLabel={`${article.title}。${article.summary}`} accessibilityHint="双击查看真实案例详情">
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardIcon} accessible={false}>{article.icon}</Text>
-              <Text style={styles.cardTitle}>{article.title}</Text>
-            </View>
-            <Text style={styles.cardSummary}>{article.summary}</Text>
-            
-            <View style={styles.cardFooter}>
-              <Text style={styles.readMore}>点击查看真实案例 →</Text>
-              <Pressable 
-                style={styles.voiceBtnSmall} 
-                // 调用修改后的 playVoice，传入标题和摘要
-                onPress={(e) => { e.stopPropagation(); playVoice(article.title, article.summary); }} 
-                accessibilityRole="button" 
-                accessibilityLabel={`语音播报：${article.title}`}
-              >
-                <Text style={styles.voiceBtnTextSmall}>🔊 语音播报</Text>
-              </Pressable>
-            </View>
-          </Pressable>
-        ))}
+        {ARTICLES.map((article) => {
+          const isSpecial96110 = article.id === '3';
+
+          return (
+            <Pressable 
+              key={article.id} 
+              style={styles.card} 
+              onPress={() => onSelectArticle(article)} 
+              accessibilityRole="button" 
+              accessibilityLabel={`${article.title}。${article.summary}`} 
+              accessibilityHint="双击查看真实案例详情"
+            >
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardIcon} accessible={false}>{article.icon}</Text>
+                <Text style={styles.cardTitle}>{article.title}</Text>
+              </View>
+              <Text style={styles.cardSummary}>{article.summary}</Text>
+              
+              <View style={styles.cardFooter}>
+                {/* 核心修改：利用嵌套 Text 实现局部文字变红 */}
+                <Text style={styles.readMore}>
+                  {isSpecial96110 ? (
+                    <>
+                      查看详情与<Text style={styles.textRed}>一键拨打</Text> →
+                    </>
+                  ) : (
+                    '查看详情 →'
+                  )}
+                </Text>
+                
+                <Pressable 
+                  style={styles.voiceBtnSmall} 
+                  onPress={(e) => { e.stopPropagation(); playVoice(article.title, article.summary); }} 
+                  accessibilityRole="button" 
+                  accessibilityLabel={`语音播报：${article.title}`}
+                >
+                  <Text style={styles.voiceBtnTextSmall}>🔊 语音播报</Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          );
+        })}
         <View style={{ height: 40 }} />
       </ScrollView>
 
@@ -70,7 +89,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#f0f2f5' },
   headerBox: { marginBottom: 20, alignItems: 'center' },
   pageTitle: { fontSize: 30, fontWeight: 'bold', color: '#D32F2F', marginBottom: 8 },
-  // 对比度优化：从 #666 加深到 #555，在浅灰背景上对比度达到 7.4:1
   pageSubtitle: { fontSize: 18, color: '#555' }, 
   card: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 20, marginBottom: 16, borderWidth: 2, borderColor: '#333333' },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
@@ -78,9 +96,12 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 22, fontWeight: 'bold', color: '#000', flex: 1 },
   cardSummary: { fontSize: 18, color: '#333', lineHeight: 28, marginBottom: 15 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  // 对比度优化：从 #1976D2 加深到 #1565C0，白底对比度 6.2:1
+  
+  // 通用文字颜色
   readMore: { fontSize: 16, color: '#1565C0', fontWeight: 'bold' }, 
+  // 局部强调色
+  textRed: { color: '#D32F2F' },
+  
   voiceBtnSmall: { backgroundColor: '#E3F2FD', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 8 },
-  // 对比度优化：从 #1976D2 加深到 #1565C0，浅蓝底对比度同样有保障
   voiceBtnTextSmall: { color: '#1565C0', fontSize: 16, fontWeight: 'bold' }, 
 });
