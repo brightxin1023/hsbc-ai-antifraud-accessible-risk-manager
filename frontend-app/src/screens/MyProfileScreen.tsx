@@ -19,6 +19,10 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
   const [isRecording, setIsRecording] = useState(false);
   const [voiceCountdown, setVoiceCountdown] = useState(5);
 
+  // 动态获取今日日期
+  const today = new Date();
+  const dateString = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: '知道了' }]) => {
     setAlertConfig({ visible: true, title, message, buttons });
   };
@@ -45,10 +49,10 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
     setLoadingLocation(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setLoadingLocation(false);
-        return showAlert("权限被拒绝", "无法获取位置。请在手机设置中允许本应用使用定位服务。");
-      }
+ if (status !== 'granted') {
+  setLoadingLocation(false);
+  return showAlert("权限被拒绝", "无法获取位置。请在手机设置中允许本应用使用定位服务。");
+}
 
       const location = await Location.getCurrentPositionAsync({});
       setCurrentCoords({ lat: location.coords.latitude, lng: location.coords.longitude });
@@ -163,9 +167,17 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
         showsVerticalScrollIndicator={false} 
         contentContainerStyle={styles.scrollContent}
       >
+        {/* 核心优化：左侧标题，右侧日历胶囊 */}
         <View style={styles.headerBox}>
-          <Text style={styles.pageTitle} accessibilityRole="header">我的</Text>
-          <Text style={styles.pageSubtitle}>账户管理与安全保障</Text>
+          <View>
+            <Text style={styles.pageTitle} accessibilityRole="header">我的</Text>
+            <Text style={styles.pageSubtitle}>账户管理与安全保障</Text>
+          </View>
+          
+          <View style={styles.dateContainer}>
+            <Text style={{ fontSize: 14, marginRight: 4 }} accessible={false}>📅</Text>
+            <Text style={styles.dateText} accessibilityLabel={`今天是${dateString}`}>{dateString}</Text>
+          </View>
         </View>
 
         <View style={styles.accountCard}>
@@ -208,22 +220,12 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
         </View>
 
         <View style={styles.menuRow}>
-          <Pressable 
-            style={styles.menuCard} 
-            onPress={showAbout} 
-            accessibilityRole="button" 
-            accessibilityLabel="关于反诈管家"
-          >
+          <Pressable style={styles.menuCard} onPress={showAbout} accessibilityRole="button" accessibilityLabel="关于反诈管家">
             <Text style={styles.menuIconLarge} accessible={false}>ℹ️</Text>
             <Text style={styles.menuText}>关于反诈管家</Text>
           </Pressable>
           
-          <Pressable 
-            style={styles.menuCard} 
-            onPress={showPrivacy} 
-            accessibilityRole="button" 
-            accessibilityLabel="隐私与协议"
-          >
+          <Pressable style={styles.menuCard} onPress={showPrivacy} accessibilityRole="button" accessibilityLabel="隐私与协议">
             <Text style={styles.menuIconLarge} accessible={false}>🔒</Text>
             <Text style={styles.menuText}>隐私与协议</Text>
           </Pressable>
@@ -267,9 +269,31 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
   scrollContent: { paddingHorizontal: 20, paddingTop: 15, paddingBottom: 100 },
   
-  headerBox: { marginBottom: 16 },
+  headerBox: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'flex-start', // 改为顶部对齐，配合胶囊
+    marginBottom: 20 
+  },
   pageTitle: { fontSize: 32, fontWeight: 'bold', color: '#1A1A1A', letterSpacing: 1 },
   pageSubtitle: { fontSize: 16, color: '#666', marginTop: 4 },
+  
+  // 新增：胶囊容器样式
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F0FE', // 大厂常用极浅蓝底
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 22, // 胶囊圆角
+    marginTop: 6, // 与主标题稍微错开一点高度
+  },
+  // 字体加大加深
+  dateText: { 
+    fontSize: 19, 
+    color: '#1565C0', // 金融蓝，既醒目又不突兀
+    fontWeight: 'bold',
+  },
   
   accountCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 16, marginBottom: 16, elevation: 4 },
   accountTitle: { color: 'white', fontSize: 24, fontWeight: 'bold' },
@@ -314,7 +338,6 @@ const styles = StyleSheet.create({
   },
   menuIconLarge: { fontSize: 28, marginBottom: 8 },
   menuText: { fontSize: 18, color: '#333', fontWeight: '500' },
-  
   menuArrow: { fontSize: 24, color: '#C7C7CC' }, 
   
   sosBtn: { backgroundColor: '#FFA000', padding: 20, borderRadius: 16, alignItems: 'center', marginBottom: 16, minHeight: 64, elevation: 2 },
