@@ -3,8 +3,11 @@ import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import { alertFamilyApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
 
-export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions, onUnfreeze, onViewAllTransactions }: any) {
+export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions, onUnfreeze, onViewAllTransactions, emergencyContact }: any) {
   const recentTransactions = transactions.slice(0, 3);
+  
+  // 辅助打码函数
+  const maskedContactPhone = emergencyContact.phone.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
 
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: 'OK' }]) => {
@@ -31,19 +34,19 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
   };
 
   const handleCallFamily = () => {
-    showAlert("📞 呼叫紧急联系人", "是否立即致电您的紧急联系人【辛先生】？", [
+    showAlert("📞 呼叫紧急联系人", `是否立即致电您的紧急联系人【${emergencyContact.name}】？`, [
       { text: "取消", style: "cancel" },
-      { text: "📞 立即致电", onPress: () => showAlert("📞 正在呼叫", "正在呼叫【辛先生】(186****6207)...") }
+      { text: "📞 立即致电", onPress: () => showAlert("📞 正在呼叫", `正在呼叫【${emergencyContact.name}】(${maskedContactPhone})...`) }
     ]);
   };
 
   const handleEmailAlert = () => {
-    showAlert("✉️ 发送紧急告警", "将向紧急联系人【辛先生】发送紧急求助邮件，是否确认？", [
+    showAlert("✉️ 发送紧急告警", `将向紧急联系人【${emergencyContact.name}】发送紧急求助邮件，是否确认？`, [
       { text: "取消", style: "cancel" },
       { text: "✉️ 确认发送", onPress: async () => {
         try {
           await alertFamilyApi("", "紧急求助", userPhone);
-          showAlert("✅ 发送成功", "紧急求助邮件已发送至【辛先生】的邮箱。");
+          showAlert("✅ 发送成功", `紧急求助邮件已发送至【${emergencyContact.name}】的邮箱。`);
         } catch (error) {
           showAlert("❌ 发送失败", "网络异常，请稍后重试。");
         }
@@ -51,6 +54,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
     ]);
   };
 
+  // ... 下面的 return 和样式保持原样 ...
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
@@ -70,13 +74,12 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
           </View>
         )}
 
-        {/* 首页卡片：改为安全状态展示，去除重复的账号信息 */}
         <View style={styles.headerCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={{ fontSize: 40, marginRight: 16 }} accessible={false}>🛡️</Text>
             <View>
               <Text style={styles.headerTitle} accessibilityRole="header">反诈防护已全面开启</Text>
-              <Text style={styles.headerSubtitle}>智能风控系统实时守护您的资金</Text>
+              <Text style={styles.headerSubtitle}>智能风控正在实时守护您的资金</Text>
             </View>
           </View>
         </View>
@@ -86,14 +89,14 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
             <Text style={{ fontSize: 32, marginRight: 12 }} accessible={false}>👨‍👩‍👧</Text>
             <View>
               <Text style={styles.familyTitle}>家庭安全守护已开启</Text>
-              <Text style={styles.familyDesc}>紧急联系人：辛先生</Text>
+              <Text style={styles.familyDesc}>紧急联系人：{emergencyContact.name}</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Pressable style={[styles.familyBtn, { backgroundColor: '#1565C0', flex: 1 }]} onPress={handleCallFamily} accessibilityRole="button" accessibilityLabel="呼叫紧急联系人辛先生">
+            <Pressable style={[styles.familyBtn, { backgroundColor: '#1565C0', flex: 1 }]} onPress={handleCallFamily} accessibilityRole="button" accessibilityLabel={`呼叫紧急联系人${emergencyContact.name}`}>
               <Text style={styles.familyBtnText}>📞 呼叫</Text>
             </Pressable>
-            <Pressable style={[styles.familyBtn, { backgroundColor: '#D32F2F', flex: 1 }]} onPress={handleEmailAlert} accessibilityRole="button" accessibilityLabel="发送紧急告警邮件给辛先生">
+            <Pressable style={[styles.familyBtn, { backgroundColor: '#D32F2F', flex: 1 }]} onPress={handleEmailAlert} accessibilityRole="button" accessibilityLabel={`发送紧急告警邮件给${emergencyContact.name}`}>
               <Text style={styles.familyBtnText}>✉️ 告警</Text>
             </Pressable>
           </View>
@@ -149,6 +152,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
   );
 }
 
+// ... 样式保持不变 ...
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, backgroundColor: '#f0f2f5' },
   frozenBanner: { backgroundColor: '#FFEBEE', padding: 20, borderRadius: 12, borderWidth: 2, borderColor: '#D32F2F', marginBottom: 20 },

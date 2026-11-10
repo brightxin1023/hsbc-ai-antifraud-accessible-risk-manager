@@ -1,47 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, Pressable, StyleSheet, Linking, Platform, Modal, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, Pressable, StyleSheet, Linking, Platform, Modal, ActivityIndicator, TextInput, KeyboardAvoidingView } from 'react-native';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 import { useAudioRecorder, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import CustomAlert from '../components/CustomAlert';
 
-export default function MyProfileScreen({ userPhone, onLogout }: any) {
+export default function MyProfileScreen({ userPhone, onLogout, emergencyContact, setEmergencyContact }: any) {
   const maskedPhone = userPhone ? `${userPhone.substring(0, 3)}****${userPhone.substring(7)}` : '';
   const cardTail = userPhone ? userPhone.substring(7) : '8888';
 
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
   const [locationText, setLocationText] = useState('点击获取当前位置');
   const [loadingLocation, setLoadingLocation] = useState(false);
-  
   const [currentCoords, setCurrentCoords] = useState<{ lat: number, lng: number } | null>(null);
 
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [isRecording, setIsRecording] = useState(false);
   const [voiceCountdown, setVoiceCountdown] = useState(5);
 
-  // 动态获取今日日期
+  // 联系人编辑状态
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [tempName, setTempName] = useState(emergencyContact.name);
+  const [tempPhone, setTempPhone] = useState(emergencyContact.phone);
+
   const today = new Date();
   const dateString = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+
+  // 辅助打码函数
+  const maskedContactPhone = emergencyContact.phone.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
 
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: '知道了' }]) => {
     setAlertConfig({ visible: true, title, message, buttons });
   };
 
-  const openMap = (keyword: string) => {
-    const url = Platform.select({
-      ios: `maps://?q=${keyword}`,
-      android: `geo:0,0?q=${keyword}`
+  const handleSaveContact = () => {
+    if (!tempName.trim() || tempPhone.length !== 11) {
+      return showAlert("提示", "请输入完整的联系人姓名和 11 位手机号。");
+    }
+    // 直接保存真实号码
+    setEmergencyContact({
+      name: tempName.trim(),
+      phone: tempPhone
     });
+    
+    setEditModalVisible(false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+  };
+
+  const openMap = (keyword: string) => {
+    const url = Platform.select({ ios: `maps://?q=${keyword}`, android: `geo:0,0?q=${keyword}` });
     if (url) Linking.openURL(url);
   };
 
   const openMapCoordinates = () => {
     if (!currentCoords) return;
     const { lat, lng } = currentCoords;
-    const url = Platform.select({
-      ios: `maps://?ll=${lat},${lng}`,
-      android: `geo:${lat},${lng}`
-    });
+    const url = Platform.select({ ios: `maps://?ll=${lat},${lng}`, android: `geo:${lat},${lng}` });
     if (url) Linking.openURL(url);
   };
 
@@ -49,11 +63,10 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
     setLoadingLocation(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
- if (status !== 'granted') {
-  setLoadingLocation(false);
-  return showAlert("权限被拒绝", "无法获取位置。请在手机设置中允许本应用使用定位服务。");
-}
-
+      if (status !== 'granted') {
+        setLoadingLocation(false);
+        return showAlert("权限被拒绝", "无法获取位置。请在手机设置中允许本应用使用定位服务。");
+      }
       const location = await Location.getCurrentPositionAsync({});
       setCurrentCoords({ lat: location.coords.latitude, lng: location.coords.longitude });
 
@@ -92,11 +105,9 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
     try {
       const status = await AudioModule.requestRecordingPermissionsAsync();
       if (!status.granted) return showAlert("权限被拒绝", "请在设置中允许麦克风权限");
-
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
       await recorder.prepareToRecordAsync();
       recorder.record();
-      
       setIsRecording(true);
       setVoiceCountdown(5);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
@@ -108,9 +119,7 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isRecording && voiceCountdown > 0) {
-      timer = setTimeout(() => {
-        setVoiceCountdown((prev) => prev - 1);
-      }, 1000);
+      timer = setTimeout(() => { setVoiceCountdown((prev) => prev - 1); }, 1000);
     } else if (isRecording && voiceCountdown === 0) {
       stopVoiceSearchLogic();
     }
@@ -122,17 +131,11 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
       await recorder.stop();
       setIsRecording(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-
       const simulatedPlace = "香港大学站";
-      
-      showAlert(
-        "🎙️ 语音识别成功",
-        `已识别到您想去：【${simulatedPlace}】。\n是否立即为您打开地图导航？`,
-        [
-          { text: "🗺️ 立即导航", onPress: () => openMap(simulatedPlace) },
-          { text: "重新输入", style: "cancel" }
-        ]
-      );
+      showAlert("🎙️ 语音识别成功", `已识别到您想去：【${simulatedPlace}】。\n是否立即为您打开地图导航？`, [
+        { text: "🗺️ 立即导航", onPress: () => openMap(simulatedPlace) },
+        { text: "重新输入", style: "cancel" }
+      ]);
     } catch (error) {
       setIsRecording(false);
     }
@@ -162,20 +165,15 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView 
-        style={styles.container} 
-        showsVerticalScrollIndicator={false} 
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* 核心优化：左侧标题，右侧日历胶囊 */}
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        
         <View style={styles.headerBox}>
           <View>
             <Text style={styles.pageTitle} accessibilityRole="header">我的</Text>
             <Text style={styles.pageSubtitle}>账户管理与安全保障</Text>
           </View>
-          
           <View style={styles.dateContainer}>
-            <Text style={{ fontSize: 14, marginRight: 4 }} accessible={false}>📅</Text>
+            <Text style={{ fontSize: 20, marginRight: 6 }} accessible={false}>📅</Text>
             <Text style={styles.dateText} accessibilityLabel={`今天是${dateString}`}>{dateString}</Text>
           </View>
         </View>
@@ -199,24 +197,40 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.locationTitle}>我的位置</Text>
-              <Text style={styles.locationDesc} numberOfLines={1}>
-                {loadingLocation ? '正在获取位置...' : locationText}
-              </Text>
+              <Text style={styles.locationDesc} numberOfLines={1}>{loadingLocation ? '正在获取位置...' : locationText}</Text>
             </View>
           </View>
           <Text style={styles.menuArrow} accessible={false}>›</Text>
         </Pressable>
 
         <View style={styles.contactCard}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {/* 无障碍优化：合并朗读区域 */}
+          <View 
+            style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+            accessible={true}
+            accessibilityLabel={`紧急联系人：${emergencyContact.name}，电话 ${maskedContactPhone}`}
+          >
             <View style={[styles.iconWrapper, { backgroundColor: '#E3F2FD' }]}>
               <Text style={{ fontSize: 24 }} accessible={false}>👨‍👩‍👧</Text>
             </View>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.contactTitle}>紧急联系人</Text>
-              <Text style={styles.contactDesc}>辛先生 · 186****6207</Text>
+              <Text style={styles.contactDesc}>{emergencyContact.name} · {maskedContactPhone}</Text>
             </View>
           </View>
+          <Pressable 
+            style={styles.editBtn} 
+            onPress={() => {
+              setTempName(emergencyContact.name);
+              setTempPhone(emergencyContact.phone); // 回显真实号码
+              setEditModalVisible(true);
+            }}
+            accessibilityRole="button" 
+            accessibilityLabel="编辑紧急联系人"
+            accessibilityHint="双击修改联系人姓名和电话号码"
+          >
+            <Text style={styles.editBtnText}>编辑</Text>
+          </Pressable>
         </View>
 
         <View style={styles.menuRow}>
@@ -224,7 +238,6 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
             <Text style={styles.menuIconLarge} accessible={false}>ℹ️</Text>
             <Text style={styles.menuText}>关于反诈管家</Text>
           </Pressable>
-          
           <Pressable style={styles.menuCard} onPress={showPrivacy} accessibilityRole="button" accessibilityLabel="隐私与协议">
             <Text style={styles.menuIconLarge} accessible={false}>🔒</Text>
             <Text style={styles.menuText}>隐私与协议</Text>
@@ -239,6 +252,64 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
           <Text style={styles.logoutBtnText}>安全退出登录</Text>
         </Pressable>
       </ScrollView>
+
+      <Modal visible={editModalVisible} transparent={true} animationType="fade">
+        {/* 无障碍优化：锁定弹窗焦点 */}
+        <KeyboardAvoidingView 
+          style={styles.modalOverlay} 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          accessibilityViewIsModal={true}
+          accessibilityLiveRegion="assertive"
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle} accessibilityRole="header">修改紧急联系人</Text>
+            
+            <Text style={styles.inputLabel}>联系人姓名</Text>
+            <TextInput 
+              style={styles.modalInput} 
+              value={tempName} 
+              onChangeText={setTempName} 
+              placeholder="请输入姓名"
+              // 对比度优化：#999 -> #767676
+              placeholderTextColor="#767676"
+              maxLength={10}
+              accessibilityLabel="联系人姓名输入框"
+            />
+            
+            <Text style={styles.inputLabel}>手机号码</Text>
+            <TextInput 
+              style={styles.modalInput} 
+              value={tempPhone} 
+              onChangeText={setTempPhone} 
+              placeholder="请输入11位手机号"
+              // 对比度优化：#999 -> #767676
+              placeholderTextColor="#767676"
+              keyboardType="number-pad"
+              maxLength={11}
+              accessibilityLabel="手机号码输入框，请输入11位数字"
+            />
+            
+            <View style={styles.modalButtons}>
+              <Pressable 
+                style={styles.cancelBtn} 
+                onPress={() => setEditModalVisible(false)}
+                accessibilityRole="button" 
+                accessibilityLabel="取消编辑"
+              >
+                <Text style={styles.cancelBtnText}>取消</Text>
+              </Pressable>
+              <Pressable 
+                style={styles.saveBtn} 
+                onPress={handleSaveContact}
+                accessibilityRole="button" 
+                accessibilityLabel="保存紧急联系人"
+              >
+                <Text style={styles.saveBtnText}>保存</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
       <Modal visible={isRecording} transparent={true} animationType="fade">
         <View style={styles.voiceModalOverlay} accessibilityViewIsModal={true} accessibilityLiveRegion="assertive">
@@ -269,81 +340,51 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
   scrollContent: { paddingHorizontal: 20, paddingTop: 15, paddingBottom: 100 },
   
-  headerBox: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'flex-start', // 改为顶部对齐，配合胶囊
-    marginBottom: 20 
-  },
+  headerBox: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
   pageTitle: { fontSize: 32, fontWeight: 'bold', color: '#1A1A1A', letterSpacing: 1 },
   pageSubtitle: { fontSize: 16, color: '#666', marginTop: 4 },
   
-  // 新增：胶囊容器样式
-  dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8F0FE', // 大厂常用极浅蓝底
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 22, // 胶囊圆角
-    marginTop: 6, // 与主标题稍微错开一点高度
-  },
-  // 字体加大加深
-  dateText: { 
-    fontSize: 19, 
-    color: '#1565C0', // 金融蓝，既醒目又不突兀
-    fontWeight: 'bold',
-  },
+  dateContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F0FE', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 22, marginTop: 6 },
+  dateText: { fontSize: 19, color: '#1565C0', fontWeight: 'bold' },
   
   accountCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 16, marginBottom: 16, elevation: 4 },
   accountTitle: { color: 'white', fontSize: 24, fontWeight: 'bold' },
   accountSubtitle: { color: 'white', fontSize: 18, marginTop: 6 },
 
-  locationCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    elevation: 2,
-  },
+  locationCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', borderRadius: 16, paddingVertical: 16, paddingHorizontal: 20, marginBottom: 16, elevation: 2 },
   locationLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 },
-  iconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#FFF3E0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
+  iconWrapper: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#FFF3E0', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
   locationTitle: { fontSize: 20, fontWeight: 'bold', color: '#333' },
   locationDesc: { fontSize: 16, color: '#666', marginTop: 4 },
   
-  contactCard: { backgroundColor: '#E3F2FD', borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: '#BBDEFB' },
+  contactCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E3F2FD', borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#BBDEFB' },
   contactTitle: { fontSize: 20, fontWeight: 'bold', color: '#1565C0' },
   contactDesc: { fontSize: 16, color: '#0D47A1', marginTop: 4 },
+  editBtn: { backgroundColor: 'white', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#90CAF9', marginLeft: 10 },
+  editBtnText: { fontSize: 16, color: '#1565C0', fontWeight: 'bold' },
   
   menuRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24, gap: 12 },
-  menuCard: { 
-    flex: 1, 
-    backgroundColor: 'white', 
-    borderRadius: 16, 
-    paddingVertical: 16, 
-    alignItems: 'center', 
-    elevation: 2 
-  },
+  menuCard: { flex: 1, backgroundColor: 'white', borderRadius: 16, paddingVertical: 16, alignItems: 'center', elevation: 2 },
   menuIconLarge: { fontSize: 28, marginBottom: 8 },
   menuText: { fontSize: 18, color: '#333', fontWeight: '500' },
-  menuArrow: { fontSize: 24, color: '#C7C7CC' }, 
+  // 对比度优化：箭头从 #C7C7CC 加深到 #666666，满足非文本对比度要求
+  menuArrow: { fontSize: 24, color: '#666666' }, 
   
   sosBtn: { backgroundColor: '#FFA000', padding: 20, borderRadius: 16, alignItems: 'center', marginBottom: 16, minHeight: 64, elevation: 2 },
   sosBtnText: { color: '#1A1A1A', fontSize: 22, fontWeight: 'bold' }, 
   logoutBtn: { backgroundColor: '#D32F2F', padding: 20, borderRadius: 16, alignItems: 'center', minHeight: 64, elevation: 2 },
   logoutBtnText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { backgroundColor: 'white', width: '90%', borderRadius: 20, padding: 24, elevation: 10 },
+  modalTitle: { fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 20, textAlign: 'center' },
+  inputLabel: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 8 },
+  modalInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 14, fontSize: 20, marginBottom: 16, backgroundColor: '#fafafa' },
+  modalButtons: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginTop: 10 },
+  cancelBtn: { flex: 1, backgroundColor: '#eee', padding: 16, borderRadius: 10, alignItems: 'center' },
+  cancelBtnText: { fontSize: 18, color: '#666', fontWeight: 'bold' },
+  saveBtn: { flex: 1, backgroundColor: '#1565C0', padding: 16, borderRadius: 10, alignItems: 'center' },
+  saveBtnText: { fontSize: 18, color: 'white', fontWeight: 'bold' },
 
   voiceModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   voiceModalContent: { backgroundColor: 'white', width: '90%', borderRadius: 24, padding: 35, alignItems: 'center' },
