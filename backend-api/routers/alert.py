@@ -10,6 +10,7 @@ def alert_family(request: AlertRequest, background_tasks: BackgroundTasks):
         send_alert_email, 
         request.text, 
         request.scam_type, 
-        request.user_phone
+        request.user_phone,
+        request.email  # 新增：传递 email
     )
     return {"status": "success", "message": "已通知家属"}

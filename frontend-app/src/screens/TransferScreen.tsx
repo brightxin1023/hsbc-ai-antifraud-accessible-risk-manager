@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { detectFraudApi, alertFamilyApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
 
-export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, userPhone, isFrozen }: any) {
+export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, userPhone, isFrozen, emergencyContact }: any) {
   const [payee, setPayee] = useState('');
   const [cardNo, setCardNo] = useState('');
   const [amount, setAmount] = useState('');
@@ -128,8 +128,9 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     addTransaction({ id: Date.now(), title: `转账 - ${payee}`, time: getFormattedTime(), amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, isExpense: true, isAbnormal: false, isRisk: resultData?.risk_level });
     if (isForced) {
       if (resultData?.risk_level === 'high') {
-        await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone);
-        showAlert("✅ 转账成功", "款项已汇出。系统已向您的紧急联系人【辛先生】发送了高危预警短信和邮件，请注意资金安全。");
+        // 👈 修改：传入 emergencyContact.email，并将名字动态化
+        await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '');
+        showAlert("✅ 转账成功", `款项已汇出。系统已向您的紧急联系人【${emergencyContact?.name || '家属'}】发送了高危预警短信和邮件，请注意资金安全。`);
       } else {
         showAlert("✅ 转账成功", "款项已汇出。系统已记录此笔可疑交易。");
       }
@@ -147,10 +148,11 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     addTransaction({ id: Date.now(), title: `转账 - ${payee}`, time: getFormattedTime(), amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, isExpense: true, isAbnormal: true });
     
     if (resultData?.risk_level === 'high') {
-      await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone);
+      // 👈 修改：传入 emergencyContact.email，并将名字动态化
+      await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '');
       showAlert(
         "🛡️ 资金已进入保护状态", 
-        "系统已为您阻断交易。同时，已自动向您的紧急联系人【辛先生】发送了拦截通知。如需解冻，请呼叫人工客服核实身份。", 
+        `系统已为您阻断交易。同时，已自动向您的紧急联系人【${emergencyContact?.name || '家属'}】发送了拦截通知。如需解冻，请呼叫人工客服核实身份。`, 
         [
           { text: "稍后处理", style: "cancel" },
           { 

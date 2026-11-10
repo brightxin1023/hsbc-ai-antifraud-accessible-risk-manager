@@ -4,32 +4,30 @@ from email.mime.text import MIMEText
 from email.header import Header
 from email.utils import formataddr
 
-def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知用户"):
+def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知用户", receiver_email: str = None):
     sender = os.getenv("MAIL_SENDER")
     auth_code = os.getenv("MAIL_AUTH_CODE")
-    
+
     if not sender or not auth_code:
         print("未配置邮箱环境变量，跳过发送。")
         return
-        
-    receiver = sender 
-    
-    # 隐藏手机号中间四位
-    masked_phone = f"{user_phone[:3]}****{user_phone[7:]}" if len(user_phone) == 11 else user_phone
 
-    # 根据 scam_type 判断是哪种告警，动态生成标题和正文
+    # 如果前端传了邮箱，就发给前端传的；如果没传，再发给默认测试邮箱
+    receiver = receiver_email if receiver_email else "2795658007@qq.com"
+    
+    masked_phone = user_phone if user_phone else "未知"
+
+    # 根据scam_type判断是哪种告警，动态生成标题和正文
     if scam_type == "紧急求助":
-        subject = "🚨【紧急求助】您的家人通过 AI 反诈盾发来求助"
+        subject = "【紧急求助】您的家人通过AI反诈盾发来求助"
         body = f"""【AI反诈盾 - 紧急求助通知】
 
 您好：
-您手机号为 {masked_phone} 的家人，刚刚通过 AI 反诈盾 App 向您发起了紧急求助。
-
+您手机号为 {masked_phone} 的家人，刚刚通过AI反诈盾App向您发起了紧急求助。
 请立即致电家人，确认其人身及财产安全！
-（此为系统自动发送，请勿回复）
-"""
+（此为系统自动发送，请勿回复）"""
     else:
-        subject = "⚠️【高危拦截】您的家人可能正在遭遇诈骗"
+        subject = "【高危拦截】您的家人可能正在遭遇诈骗"
         body = f"""【AI反诈盾 - 高危交易拦截预警】
 
 您好：
@@ -39,11 +37,11 @@ def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知�
 【转账附言】：
 {user_text if user_text else '无附言'}
 
-系统已自动阻断该交易。请立即联系家人，提醒其切勿上当受骗！
-"""
+系统已自动阻断该交易。请立即联系家人，提醒其切勿上当受骗！"""
 
     message = MIMEText(body, 'plain', 'utf-8')
-    message['From'] = formataddr(("AI反诈盾", sender))
+    # 👇 核心修复：这里必须是一个元组，要加双层括号
+    message['From'] = formataddr(("AI 反诈盾", sender))
     message['To'] = formataddr(("家属", receiver))
     message['Subject'] = Header(subject, 'utf-8')
 

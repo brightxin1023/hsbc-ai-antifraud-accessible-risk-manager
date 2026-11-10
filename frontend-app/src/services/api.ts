@@ -18,11 +18,12 @@ export const askQuestionApi = async (query: string) => {
   return response.json();
 };
 
-export const alertFamilyApi = async (text: string, scam_type: string, user_phone: string) => {
+// 修改：增加 email 参数
+export const alertFamilyApi = async (text: string, scam_type: string, user_phone: string, email: string) => {
   const response = await fetch(`${BASE_URL}/api/alert/family`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, scam_type, user_phone }),
+    body: JSON.stringify({ text, scam_type, user_phone, email }),
   });
   return response.json();
 };

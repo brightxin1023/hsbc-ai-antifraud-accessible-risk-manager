@@ -45,7 +45,8 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       { text: "取消", style: "cancel" },
       { text: "✉️ 确认发送", onPress: async () => {
         try {
-          await alertFamilyApi("", "紧急求助", userPhone);
+          // 👈 核心修改：传入了 emergencyContact.email
+          await alertFamilyApi("", "紧急求助", userPhone, emergencyContact.email);
           showAlert("✅ 发送成功", `紧急求助邮件已发送至【${emergencyContact.name}】的邮箱。`);
         } catch (error) {
           showAlert("❌ 发送失败", "网络异常，请稍后重试。");
@@ -54,7 +55,6 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
     ]);
   };
 
-  // ... 下面的 return 和样式保持原样 ...
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
@@ -152,7 +152,6 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
   );
 }
 
-// ... 样式保持不变 ...
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, backgroundColor: '#f0f2f5' },
   frozenBanner: { backgroundColor: '#FFEBEE', padding: 20, borderRadius: 12, borderWidth: 2, borderColor: '#D32F2F', marginBottom: 20 },

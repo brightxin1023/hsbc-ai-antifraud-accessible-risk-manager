@@ -22,6 +22,7 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [tempName, setTempName] = useState(emergencyContact.name);
   const [tempPhone, setTempPhone] = useState(emergencyContact.phone);
+  const [tempEmail, setTempEmail] = useState(emergencyContact.email); // 👈 新增邮箱状态
 
   const today = new Date();
   const dateString = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
@@ -34,13 +35,15 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   };
 
   const handleSaveContact = () => {
-    if (!tempName.trim() || tempPhone.length !== 11) {
-      return showAlert("提示", "请输入完整的联系人姓名和 11 位手机号。");
+    // 👈 增加邮箱校验
+    if (!tempName.trim() || tempPhone.length !== 11 || !tempEmail.trim() || !tempEmail.includes('@')) {
+      return showAlert("提示", "请填写完整的联系人姓名、11位手机号和有效邮箱。");
     }
-    // 直接保存真实号码
+    // 保存真实数据
     setEmergencyContact({
       name: tempName.trim(),
-      phone: tempPhone
+      phone: tempPhone,
+      email: tempEmail.trim()
     });
     
     setEditModalVisible(false);
@@ -204,11 +207,11 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
         </Pressable>
 
         <View style={styles.contactCard}>
-          {/* 无障碍优化：合并朗读区域 */}
+          {/* 无障碍优化：合并朗读区域，加入邮箱 */}
           <View 
             style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
             accessible={true}
-            accessibilityLabel={`紧急联系人：${emergencyContact.name}，电话 ${maskedContactPhone}`}
+            accessibilityLabel={`紧急联系人：${emergencyContact.name}，电话 ${maskedContactPhone}，邮箱 ${emergencyContact.email}`}
           >
             <View style={[styles.iconWrapper, { backgroundColor: '#E3F2FD' }]}>
               <Text style={{ fontSize: 24 }} accessible={false}>👨‍👩‍👧</Text>
@@ -222,12 +225,13 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
             style={styles.editBtn} 
             onPress={() => {
               setTempName(emergencyContact.name);
-              setTempPhone(emergencyContact.phone); // 回显真实号码
+              setTempPhone(emergencyContact.phone);
+              setTempEmail(emergencyContact.email); // 👈 回显真实邮箱
               setEditModalVisible(true);
             }}
             accessibilityRole="button" 
             accessibilityLabel="编辑紧急联系人"
-            accessibilityHint="双击修改联系人姓名和电话号码"
+            accessibilityHint="双击修改联系人姓名、电话和邮箱"
           >
             <Text style={styles.editBtnText}>编辑</Text>
           </Pressable>
@@ -254,7 +258,6 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
       </ScrollView>
 
       <Modal visible={editModalVisible} transparent={true} animationType="fade">
-        {/* 无障碍优化：锁定弹窗焦点 */}
         <KeyboardAvoidingView 
           style={styles.modalOverlay} 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -270,7 +273,6 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
               value={tempName} 
               onChangeText={setTempName} 
               placeholder="请输入姓名"
-              // 对比度优化：#999 -> #767676
               placeholderTextColor="#767676"
               maxLength={10}
               accessibilityLabel="联系人姓名输入框"
@@ -282,11 +284,23 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
               value={tempPhone} 
               onChangeText={setTempPhone} 
               placeholder="请输入11位手机号"
-              // 对比度优化：#999 -> #767676
               placeholderTextColor="#767676"
               keyboardType="number-pad"
               maxLength={11}
               accessibilityLabel="手机号码输入框，请输入11位数字"
+            />
+
+            {/* 👈 新增：电子邮箱输入框 */}
+            <Text style={styles.inputLabel}>电子邮箱</Text>
+            <TextInput 
+              style={styles.modalInput} 
+              value={tempEmail} 
+              onChangeText={setTempEmail} 
+              placeholder="请输入用于接收告警的邮箱"
+              placeholderTextColor="#767676"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              accessibilityLabel="电子邮箱输入框"
             />
             
             <View style={styles.modalButtons}>
@@ -367,7 +381,6 @@ const styles = StyleSheet.create({
   menuCard: { flex: 1, backgroundColor: 'white', borderRadius: 16, paddingVertical: 16, alignItems: 'center', elevation: 2 },
   menuIconLarge: { fontSize: 28, marginBottom: 8 },
   menuText: { fontSize: 18, color: '#333', fontWeight: '500' },
-  // 对比度优化：箭头从 #C7C7CC 加深到 #666666，满足非文本对比度要求
   menuArrow: { fontSize: 24, color: '#666666' }, 
   
   sosBtn: { backgroundColor: '#FFA000', padding: 20, borderRadius: 16, alignItems: 'center', marginBottom: 16, minHeight: 64, elevation: 2 },

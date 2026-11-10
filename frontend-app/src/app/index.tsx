@@ -21,10 +21,11 @@ export default function App() {
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
 
-  // 修改：全局只存真实号码
+  // 修改：全局状态增加 email 字段
   const [emergencyContact, setEmergencyContact] = useState({
     name: '辛先生',
-    phone: '18635556207' 
+    phone: '18635556207',
+    email: '2795658007@qq.com'
   });
 
   const [transactions, setTransactions] = useState<any[]>([
@@ -81,6 +82,7 @@ export default function App() {
               <TransferScreen 
                 onFreeze={() => setIsFrozen(true)} onUnfreeze={() => setIsFrozen(false)} 
                 addTransaction={addTransaction} userPhone={userPhone} isFrozen={isFrozen}
+                emergencyContact={emergencyContact} // 新增：将包含邮箱的对象传入转账页
               />
             )}
             
