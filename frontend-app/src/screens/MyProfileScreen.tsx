@@ -13,10 +13,8 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
   const [locationText, setLocationText] = useState('点击获取当前位置');
   const [loadingLocation, setLoadingLocation] = useState(false);
   
-  // 新增：保存当前经纬度，用于精准位置查看
   const [currentCoords, setCurrentCoords] = useState<{ lat: number, lng: number } | null>(null);
 
-  // 语音输入相关状态
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [isRecording, setIsRecording] = useState(false);
   const [voiceCountdown, setVoiceCountdown] = useState(5);
@@ -25,7 +23,6 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
     setAlertConfig({ visible: true, title, message, buttons });
   };
 
-  // 唤起系统地图（关键词搜索）
   const openMap = (keyword: string) => {
     const url = Platform.select({
       ios: `maps://?q=${keyword}`,
@@ -34,18 +31,16 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
     if (url) Linking.openURL(url);
   };
 
-  // 唤起系统地图（精准经纬度坐标）
   const openMapCoordinates = () => {
     if (!currentCoords) return;
     const { lat, lng } = currentCoords;
     const url = Platform.select({
-      ios: `maps://?ll=${lat},${lng}`, // 苹果地图传经纬度
-      android: `geo:${lat},${lng}`    // 安卓原生 geo URI
+      ios: `maps://?ll=${lat},${lng}`,
+      android: `geo:${lat},${lng}`
     });
     if (url) Linking.openURL(url);
   };
 
-  // 获取位置并弹窗
   const handleGetLocation = async () => {
     setLoadingLocation(true);
     try {
@@ -56,7 +51,6 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
       }
 
       const location = await Location.getCurrentPositionAsync({});
-      // 保存当前坐标
       setCurrentCoords({ lat: location.coords.latitude, lng: location.coords.longitude });
 
       const reverseGeocode = await Location.reverseGeocodeAsync({
@@ -73,7 +67,6 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
 
       setLoadingLocation(false);
 
-      // 弹窗：提供五种选择
       showAlert(
         "📍 已获取当前位置",
         `您当前位于：${addressStr}。\n请问您需要前往哪里寻求帮助？`,
@@ -81,7 +74,7 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
           { text: "🏢 寻找银行网点", onPress: () => openMap("银行") },
           { text: "🚓 寻找警察局", onPress: () => openMap("警察局") },
           { text: "🎙️ 语音输入其他地点", onPress: handleVoiceSearch },
-          { text: "🗺️ 查看我的精准位置", onPress: openMapCoordinates }, // 新增按钮
+          { text: "🗺️ 查看我的精准位置", onPress: openMapCoordinates },
           { text: "取消", style: "cancel" }
         ]
       );
@@ -91,7 +84,6 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
     }
   };
 
-  // 处理语音搜索
   const handleVoiceSearch = async () => {
     try {
       const status = await AudioModule.requestRecordingPermissionsAsync();
@@ -109,7 +101,6 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
     }
   };
 
-  // 语音倒计时逻辑
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isRecording && voiceCountdown > 0) {
@@ -128,7 +119,6 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
       setIsRecording(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
 
-      // 模拟语音识别成功
       const simulatedPlace = "香港大学站";
       
       showAlert(
@@ -168,7 +158,12 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+      {/* 核心修复：将 paddingBottom 提升至 120，确保底部按钮不被悬浮的 Tab 栏遮挡 */}
+      <ScrollView 
+        style={styles.container} 
+        showsVerticalScrollIndicator={false} 
+        contentContainerStyle={styles.scrollContent}
+      >
         <Text style={styles.pageTitle} accessibilityRole="header">我的</Text>
 
         {/* 账户信息卡片 */}
@@ -246,7 +241,6 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
         </View>
       </Modal>
 
-      {/* 全局自定义弹窗 */}
       <CustomAlert 
         visible={alertConfig.visible} 
         title={alertConfig.title} 
@@ -259,7 +253,10 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 20, paddingTop: 20, backgroundColor: '#f0f2f5' },
+  container: { flex: 1, backgroundColor: '#f0f2f5' },
+  // 新增：专门管理滚动区域的样式，增加 120 的底部留白
+  scrollContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120 },
+  
   pageTitle: { fontSize: 28, fontWeight: 'bold', color: '#333', marginBottom: 20 },
   
   accountCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 12, marginBottom: 20, elevation: 4 },
@@ -296,7 +293,6 @@ const styles = StyleSheet.create({
   logoutBtn: { backgroundColor: '#D32F2F', padding: 20, borderRadius: 12, alignItems: 'center', minHeight: 64 },
   logoutBtnText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
 
-  // 语音弹窗样式
   voiceModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   voiceModalContent: { backgroundColor: 'white', width: '90%', borderRadius: 24, padding: 35, alignItems: 'center' },
   voiceModalTitle: { fontSize: 30, fontWeight: 'bold', color: '#D32F2F', marginBottom: 15 },
