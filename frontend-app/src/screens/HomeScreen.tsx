@@ -76,7 +76,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
             <Text style={{ fontSize: 40, marginRight: 16 }} accessible={false}>🛡️</Text>
             <View>
               <Text style={styles.headerTitle} accessibilityRole="header">反诈防护已全面开启</Text>
-              <Text style={styles.headerSubtitle}>智能风控正在实时守护您的资金</Text>
+              <Text style={styles.headerSubtitle}>智能风控系统实时守护您的资金</Text>
             </View>
           </View>
         </View>

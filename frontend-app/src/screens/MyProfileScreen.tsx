@@ -149,7 +149,7 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
   };
 
   const showAbout = () => {
-    showAlert("关于反诈管家", "当前版本：v1.0.0\n本产品由 HSBC 黑客松团队研发，致力于为残障与老年群体提供无障碍的智能金融反诈保护。");
+    showAlert("关于数字无碍·智能反诈管家", "当前版本：v1.0.0\n本产品由 HSBC 黑客松团队研发，致力于为残障与老年群体提供无障碍的智能金融反诈保护。");
   };
 
   const showPrivacy = () => {
@@ -158,22 +158,22 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* 核心修复：将 paddingBottom 提升至 120，确保底部按钮不被悬浮的 Tab 栏遮挡 */}
       <ScrollView 
         style={styles.container} 
         showsVerticalScrollIndicator={false} 
         contentContainerStyle={styles.scrollContent}
       >
-        <Text style={styles.pageTitle} accessibilityRole="header">我的</Text>
+        <View style={styles.headerBox}>
+          <Text style={styles.pageTitle} accessibilityRole="header">我的</Text>
+          <Text style={styles.pageSubtitle}>账户管理与安全保障</Text>
+        </View>
 
-        {/* 账户信息卡片 */}
         <View style={styles.accountCard}>
           <Text style={styles.accountTitle} accessibilityRole="header">账户已安全绑定</Text>
           <Text style={styles.accountSubtitle}>绑定账号: {maskedPhone}</Text>
           <Text style={styles.accountSubtitle}>尾号 {cardTail} 储蓄卡</Text>
         </View>
 
-        {/* 我的位置卡片 */}
         <Pressable 
           style={styles.locationCard} 
           onPress={handleGetLocation}
@@ -182,7 +182,9 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
           accessibilityState={{ busy: loadingLocation }}
         >
           <View style={styles.locationLeft}>
-            <Text style={styles.locationIcon} accessible={false}>📍</Text>
+            <View style={styles.iconWrapper}>
+              <Text style={{ fontSize: 24 }} accessible={false}>📍</Text>
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.locationTitle}>我的位置</Text>
               <Text style={styles.locationDesc} numberOfLines={1}>
@@ -193,10 +195,11 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
           <Text style={styles.menuArrow} accessible={false}>›</Text>
         </Pressable>
 
-        {/* 紧急联系人展示 */}
         <View style={styles.contactCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ fontSize: 32, marginRight: 12 }} accessible={false}>👨‍👩‍👧</Text>
+            <View style={[styles.iconWrapper, { backgroundColor: '#E3F2FD' }]}>
+              <Text style={{ fontSize: 24 }} accessible={false}>👨‍👩‍👧</Text>
+            </View>
             <View>
               <Text style={styles.contactTitle}>紧急联系人</Text>
               <Text style={styles.contactDesc}>辛先生 · 186****6207</Text>
@@ -204,19 +207,28 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
           </View>
         </View>
 
-        {/* 功能列表区 */}
-        <View style={styles.menuList}>
-          <Pressable style={[styles.menuItem, styles.menuItemBorder]} onPress={showAbout} accessibilityRole="button" accessibilityLabel="关于反诈管家">
+        <View style={styles.menuRow}>
+          <Pressable 
+            style={styles.menuCard} 
+            onPress={showAbout} 
+            accessibilityRole="button" 
+            accessibilityLabel="关于反诈管家"
+          >
+            <Text style={styles.menuIconLarge} accessible={false}>ℹ️</Text>
             <Text style={styles.menuText}>关于反诈管家</Text>
-            <Text style={styles.menuArrow}>›</Text>
           </Pressable>
-          <Pressable style={styles.menuItem} onPress={showPrivacy} accessibilityRole="button" accessibilityLabel="隐私与协议">
+          
+          <Pressable 
+            style={styles.menuCard} 
+            onPress={showPrivacy} 
+            accessibilityRole="button" 
+            accessibilityLabel="隐私与协议"
+          >
+            <Text style={styles.menuIconLarge} accessible={false}>🔒</Text>
             <Text style={styles.menuText}>隐私与协议</Text>
-            <Text style={styles.menuArrow}>›</Text>
           </Pressable>
         </View>
 
-        {/* 操作按钮区 */}
         <Pressable style={styles.sosBtn} onPress={handleSOSCall} accessibilityRole="button" accessibilityLabel="呼叫人工客服">
           <Text style={styles.sosBtnText}>📞 呼叫人工客服</Text>
         </Pressable>
@@ -226,7 +238,6 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
         </Pressable>
       </ScrollView>
 
-      {/* 语音识别遮罩层 */}
       <Modal visible={isRecording} transparent={true} animationType="fade">
         <View style={styles.voiceModalOverlay} accessibilityViewIsModal={true} accessibilityLiveRegion="assertive">
           <View style={styles.voiceModalContent}>
@@ -254,12 +265,13 @@ export default function MyProfileScreen({ userPhone, onLogout }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
-  // 新增：专门管理滚动区域的样式，增加 120 的底部留白
-  scrollContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120 },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 15, paddingBottom: 100 },
   
-  pageTitle: { fontSize: 28, fontWeight: 'bold', color: '#333', marginBottom: 20 },
+  headerBox: { marginBottom: 16 },
+  pageTitle: { fontSize: 32, fontWeight: 'bold', color: '#1A1A1A', letterSpacing: 1 },
+  pageSubtitle: { fontSize: 16, color: '#666', marginTop: 4 },
   
-  accountCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 12, marginBottom: 20, elevation: 4 },
+  accountCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 16, marginBottom: 16, elevation: 4 },
   accountTitle: { color: 'white', fontSize: 24, fontWeight: 'bold' },
   accountSubtitle: { color: 'white', fontSize: 18, marginTop: 6 },
 
@@ -268,29 +280,46 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginBottom: 16,
     elevation: 2,
   },
   locationLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 },
-  locationIcon: { fontSize: 36, marginRight: 12 },
+  iconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFF3E0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
   locationTitle: { fontSize: 20, fontWeight: 'bold', color: '#333' },
   locationDesc: { fontSize: 16, color: '#666', marginTop: 4 },
   
-  contactCard: { backgroundColor: '#E3F2FD', borderRadius: 12, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: '#BBDEFB' },
+  contactCard: { backgroundColor: '#E3F2FD', borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: '#BBDEFB' },
   contactTitle: { fontSize: 20, fontWeight: 'bold', color: '#1565C0' },
   contactDesc: { fontSize: 16, color: '#0D47A1', marginTop: 4 },
   
-  menuList: { backgroundColor: 'white', borderRadius: 12, marginBottom: 25, overflow: 'hidden' },
-  menuItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 18, paddingHorizontal: 20 },
-  menuItemBorder: { borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  menuText: { fontSize: 20, color: '#333', fontWeight: '500' },
-  menuArrow: { fontSize: 24, color: '#999' },
+  menuRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24, gap: 12 },
+  menuCard: { 
+    flex: 1, 
+    backgroundColor: 'white', 
+    borderRadius: 16, 
+    paddingVertical: 16, 
+    alignItems: 'center', 
+    elevation: 2 
+  },
+  menuIconLarge: { fontSize: 28, marginBottom: 8 },
+  menuText: { fontSize: 18, color: '#333', fontWeight: '500' },
   
-  sosBtn: { backgroundColor: '#FFA000', padding: 20, borderRadius: 12, alignItems: 'center', marginBottom: 16, minHeight: 64 },
+  menuArrow: { fontSize: 24, color: '#C7C7CC' }, 
+  
+  sosBtn: { backgroundColor: '#FFA000', padding: 20, borderRadius: 16, alignItems: 'center', marginBottom: 16, minHeight: 64, elevation: 2 },
   sosBtnText: { color: '#1A1A1A', fontSize: 22, fontWeight: 'bold' }, 
-  logoutBtn: { backgroundColor: '#D32F2F', padding: 20, borderRadius: 12, alignItems: 'center', minHeight: 64 },
+  logoutBtn: { backgroundColor: '#D32F2F', padding: 20, borderRadius: 16, alignItems: 'center', minHeight: 64, elevation: 2 },
   logoutBtnText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
 
   voiceModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },

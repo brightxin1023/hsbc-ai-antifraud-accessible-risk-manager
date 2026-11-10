@@ -22,11 +22,9 @@ export default function CustomAlert({ visible, title, message, buttons, onClose 
 
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
-      {/* 1. 外层遮罩层：设置 accessible={false} 防止读屏把背景当做一个巨大的区域朗读 */}
       <View style={styles.overlay} accessibilityViewIsModal={true} accessibilityLiveRegion="assertive" accessible={false}>
+        {/* 优化点：把之前的 width: 300 改成了百分比宽度，让长标题自动撑开 */}
         <View style={styles.alertBox}>
-          
-          {/* 2. 内容区：将标题和正文合并为一个语义块，盲人单指滑一下就能听完 */}
           <View 
             style={styles.content} 
             accessible={true}
@@ -48,7 +46,6 @@ export default function CustomAlert({ visible, title, message, buttons, onClose 
                   {index > 0 && (
                     <View style={finalButtons.length > 2 ? styles.divider : styles.dividerVertical} />
                   )}
-                  {/* 3. 按钮独立可点击 */}
                   <Pressable
                     style={[
                       styles.button,
@@ -87,7 +84,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   alertBox: {
-    width: 300,
+    // 核心修改：使用百分比宽度和最大宽度限制
+    width: '85%', 
+    maxWidth: 400, 
     backgroundColor: '#2C2C2E',
     borderRadius: 16,
     overflow: 'hidden',
@@ -99,7 +98,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingVertical: 24,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20, // 稍微收窄了一点水平内边距
     alignItems: 'center',
   },
   title: {
