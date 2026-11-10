@@ -25,10 +25,10 @@ export default function App() {
   const [showAllTransactions, setShowAllTransactions] = useState(false);
 
   const [transactions, setTransactions] = useState<any[]>([
-    { id: 1, title: '转账 - 某某科技有限公司', time: '11-10 10:24', amount: '- ¥ 8,000.00', isExpense: true, isAbnormal: false },
-    { id: 2, title: '游戏充值 - 某某游戏平台', time: '11-10 09:15', amount: '- ¥ 328.00', isExpense: true, isAbnormal: true },
-    { id: 3, title: '收款 - 工资入账', time: '11-09 15:30', amount: '+ ¥ 12,500.00', isExpense: false, isAbnormal: false },
-    { id: 4, title: '外卖 - 某某餐饮', time: '11-09 12:10', amount: '- ¥ 35.50', isExpense: true, isAbnormal: false },
+    { id: 1, title: '转账 - 某某科技有限公司', time: '11-10 7:24', amount: '- ¥ 8,000.00', isExpense: true, isAbnormal: false },
+    { id: 2, title: '游戏充值 - 某某游戏平台', time: '11-9 09:15', amount: '- ¥ 328.00', isExpense: true, isAbnormal: true },
+    { id: 3, title: '收款 - 工资入账', time: '11-08 15:30', amount: '+ ¥ 12,500.00', isExpense: false, isAbnormal: false },
+    { id: 4, title: '外卖 - 某某餐饮', time: '11-07 12:10', amount: '- ¥ 35.50', isExpense: true, isAbnormal: false },
   ]);
 
   const addTransaction = (newTx: any) => {
