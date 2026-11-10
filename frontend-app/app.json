@@ -8,8 +8,10 @@
     "scheme": "frontendapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
-    },
+  "infoPlist": {
+    "NSLocationWhenInUseUsageDescription": "我们需要获取您的位置，以便在紧急情况下为您寻找最近的警察局或银行网点。"
+  }
+},
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
