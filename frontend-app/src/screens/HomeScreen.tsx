@@ -3,10 +3,18 @@ import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import { alertFamilyApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
 
+/**
+ * 首页：展示账户安全状态、家庭守护入口与最近三笔交易流水。
+ *
+ * 只渲染最新 3 条流水（聚焦 + 减少渲染开销），完整流水经 onViewAllTransactions
+ * 进入二级页；冻结横幅与家庭告警统一走 CustomAlert，维持大字号与读屏语义。
+ *
+ * @param props 全局状态与回调的透传参数。
+ */
 export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions, onUnfreeze, onViewAllTransactions, emergencyContact }: any) {
   const recentTransactions = transactions.slice(0, 3);
   
-  // 辅助打码函数
+  // 脱敏展示：中间四位打码，避免完整手机号被读屏播报或被旁人窥屏
   const maskedContactPhone = emergencyContact.phone.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
 
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
@@ -45,7 +53,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       { text: "取消", style: "cancel" },
       { text: "✉️ 确认发送", onPress: async () => {
         try {
-          // 👈 核心修改：传入了 emergencyContact.email
+          // 用紧急联系人邮箱作为收件人，确保告警落到真实联系人而非默认测试邮箱
           await alertFamilyApi("", "紧急求助", userPhone, emergencyContact.email);
           showAlert("✅ 发送成功", `紧急求助邮件已发送至【${emergencyContact.name}】的邮箱。`);
         } catch (error) {

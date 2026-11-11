@@ -11,6 +11,12 @@ import TransactionHistoryScreen from '../screens/TransactionHistoryScreen';
 import MyProfileScreen from '../screens/MyProfileScreen';
 import ToolsScreen from '../screens/ToolsScreen';
 
+/**
+ * 应用入口：统一管理登录态、当前 Tab、冻结状态与全局业务状态。
+ *
+ * 二级页（交易流水/文章详情）用 showAllTransactions / selectedArticle 局部开关控制，
+ * 与底部导航解耦：进入二级页时隐藏 Tab 栏，返回后恢复，避免导航状态穿透。
+ */
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userPhone, setUserPhone] = useState('');
@@ -21,7 +27,7 @@ export default function App() {
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
 
-  // 修改：全局状态增加 email 字段
+  // 紧急联系人提升为全局状态：首页/转账页/我的页三处共用，保证告警邮箱与姓名一致
   const [emergencyContact, setEmergencyContact] = useState({
     name: '辛先生',
     phone: '18635556207',
@@ -82,7 +88,7 @@ export default function App() {
               <TransferScreen 
                 onFreeze={() => setIsFrozen(true)} onUnfreeze={() => setIsFrozen(false)} 
                 addTransaction={addTransaction} userPhone={userPhone} isFrozen={isFrozen}
-                emergencyContact={emergencyContact} // 新增：将包含邮箱的对象传入转账页
+                emergencyContact={emergencyContact}
               />
             )}
             
@@ -99,6 +105,7 @@ export default function App() {
         )}
       </View>
       
+      {/* 键盘弹出或进入二级页时隐藏底部导航：避免遮挡输入框、让二级页全屏聚焦 */}
       {!isKeyboardVisible && !selectedArticle && !showAllTransactions && (
         <View style={styles.bottomNavContainer}>
           <BottomNav currentPage={currentPage} setCurrentPage={setCurrentPage} />

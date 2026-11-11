@@ -8,8 +8,18 @@ import CustomAlert from '../components/CustomAlert';
 
 interface Message { id: string; role: 'user' | 'ai'; content: string; }
 
+// 底部导航占位高度：无键盘时输入区预留这段空间，防止被全局 Tab 栏遮挡
 const BOTTOM_NAV_HEIGHT = 80;
 
+/**
+ * 反诈智能问答：消息列表 + 底部输入框的聊天式界面。
+ *
+ * 键盘避让是核心：用 Keyboard 事件动态读取真实键盘高度去调整输入区下边距，
+ * 并以 BOTTOM_NAV_HEIGHT 兜底（无键盘时预留底部导航高度），配合 scrollToEnd
+ * 保证输入框始终可见、最新消息始终可读。
+ *
+ * @param onBack 可选返回回调；由工具箱内部渲染时传入。
+ */
 export default function QAScreen({ onBack }: any) {
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<Message[]>([
@@ -29,12 +39,14 @@ export default function QAScreen({ onBack }: any) {
   };
 
   useEffect(() => {
+    // 区分 iOS/Android 键盘事件名，统一捕获真实键盘高度作为输入区的避让偏移量
     const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', (e) => setKeyboardHeight(e.endCoordinates.height));
     const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardHeight(0));
     return () => { showSub.remove(); hideSub.remove(); };
   }, []);
 
   useEffect(() => {
+    // 新消息/加载态/键盘变化后延迟 300ms 滚到底部：等布局与键盘动画完成再滚动，否则会滚不到最新一条
     const timer = setTimeout(() => { flatListRef.current?.scrollToEnd({ animated: true }); }, 300);
     return () => clearTimeout(timer);
   }, [messages, loading, keyboardHeight]); 
@@ -45,6 +57,7 @@ export default function QAScreen({ onBack }: any) {
       timer = setTimeout(async () => {
         await recorder.stop();
         setIsRecording(false);
+        // Mock 隔离：真实语音识别需接入 ASR，此处用固定问句模拟结果，保证离线可演示
         setInputText('刚才有人打电话说我的医保卡停用了，让我点链接验证，这是真的吗？');
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       }, 5000);
@@ -138,6 +151,7 @@ export default function QAScreen({ onBack }: any) {
         ) : undefined}
       />
 
+      {/* 键盘避让：有键盘时用真实高度减去安全区下边距；无键盘时退回底部导航高度兜底 */}
       <View style={[styles.inputArea, { marginBottom: keyboardHeight > 0 ? keyboardHeight - (insets.bottom || 0) : 0, paddingBottom: keyboardHeight > 0 ? 10 : BOTTOM_NAV_HEIGHT + 10 }]}>
         <View style={styles.inputRow}>
           <TextInput

@@ -3,7 +3,14 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import ScriptDetectScreen from './ScriptDetectScreen';
 import QAScreen from './QAScreen';
 
+/**
+ * 反诈工具箱入口：用局部状态 activeTool 在“菜单/剧本扫描/智能问答”之间切换。
+ *
+ * 子工具在本页内部渲染，不占用全局底部导航；返回时只回退局部状态，
+ * 保持底部 Tab 架构稳定，同时让每个工具可独立复用。
+ */
 export default function ToolsScreen() {
+  // 局部路由：工具切换只影响本页，避免污染全局 currentPage 与底部导航状态
   const [activeTool, setActiveTool] = useState<'menu' | 'script' | 'qa'>('menu');
 
   if (activeTool === 'script') {

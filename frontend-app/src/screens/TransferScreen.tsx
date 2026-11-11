@@ -4,6 +4,14 @@ import * as Haptics from 'expo-haptics';
 import { detectFraudApi, alertFamilyApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
 
+/**
+ * 转账页：录入收款信息后先做风控研判，再按风险等级给出“阻断/确认”决策。
+ *
+ * 风控采用“AI 语义研判 + 前端行为规则（大额/无附言）”双层策略；
+ * 高危交易触发多级 Haptics 震动提醒，阻断后自动告警紧急联系人。
+ *
+ * @param props 冻结状态、回调与紧急联系人等全局透传参数。
+ */
 export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, userPhone, isFrozen, emergencyContact }: any) {
   const [payee, setPayee] = useState('');
   const [cardNo, setCardNo] = useState('');
@@ -31,6 +39,10 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     return `${MM}-${DD} ${HH}:${mm}`;
   };
 
+  /**
+   * 多模态震动：按风险等级叠加不同强度的触觉反馈，让视障用户不看屏幕
+   * 也能通过震动节奏感知风险高低，形成视觉之外的第二条告警通道。
+   */
   const triggerHaptic = (level: 'low' | 'medium' | 'high') => {
     if (level === 'low') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -47,6 +59,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
 
   useEffect(() => {
     if (cardNo.length >= 8) {
+      // Mock 隔离：不接入真实银行卡 BIN 库，按卡号末位模拟识别银行，保证演示可离线运行
       const banks = ['工商银行', '建设银行', '招商银行', '农业银行', '中国银行', '交通银行'];
       const randomBank = banks[parseInt(cardNo.slice(-1)) % banks.length];
       setBankInfo(`已识别为：${randomBank} 储蓄卡`);
@@ -59,7 +72,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
   const checkFraud = async () => {
     Keyboard.dismiss();
     
-    // 核心修复：如果账户处于冻结状态，直接弹窗拦截，阻止往下执行
+    // 高危阻断第一道闸：账户已保护性冻结时在本地直接拦截，不再发请求、不进入 AI 研判
     if (isFrozen) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       return showAlert(
@@ -76,7 +89,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
                 [{ 
                   text: "OK", 
                   onPress: () => {
-                    onUnfreeze(); // 调用父组件解除冻结
+                    onUnfreeze(); // 解冻由父组件统一管理，避免本页局部状态与全局状态不一致
                     showAlert("✅ 解冻成功", "人工客服已为您核实身份，账户已恢复正常使用。");
                   } 
                 }]
@@ -92,6 +105,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
 
     setLoading(true);
     try {
+      // 双层风控：AI 语义研判之外，叠加前端行为规则（大额、无附言）兜底升级风险
       const isLargeAmount = parseFloat(amount) > 5000;
       const isMissingNote = !note;
       const combinedText = `收款人户名：${payee}，收款账号：${cardNo}，转账金额：${amount}元，转账附言：${note || '无'}`;
@@ -128,7 +142,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     addTransaction({ id: Date.now(), title: `转账 - ${payee}`, time: getFormattedTime(), amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, isExpense: true, isAbnormal: false, isRisk: resultData?.risk_level });
     if (isForced) {
       if (resultData?.risk_level === 'high') {
-        // 👈 修改：传入 emergencyContact.email，并将名字动态化
+        // 用真实紧急联系人的邮箱/姓名发告警，避免落到默认测试邮箱或写死姓名
         await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '');
         showAlert("✅ 转账成功", `款项已汇出。系统已向您的紧急联系人【${emergencyContact?.name || '家属'}】发送了高危预警短信和邮件，请注意资金安全。`);
       } else {
@@ -148,7 +162,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     addTransaction({ id: Date.now(), title: `转账 - ${payee}`, time: getFormattedTime(), amount: `- ¥ ${parseFloat(amount).toFixed(2)}`, isExpense: true, isAbnormal: true });
     
     if (resultData?.risk_level === 'high') {
-      // 👈 修改：传入 emergencyContact.email，并将名字动态化
+      // 高危交易必须把告警送达真实联系人，邮箱与姓名均取全局紧急联系人状态
       await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '');
       showAlert(
         "🛡️ 资金已进入保护状态", 
@@ -254,6 +268,8 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
               onChangeText={setNote} 
               accessibilityLabel="转账附言输入框，选填"
               onFocus={() => {
+                // 聚焦附言时延迟滚动到底部，避免键盘弹出后遮住输入框；
+                // setTimeout 等待键盘动画完成，否则 scrollToEnd 会算错高度
                 setTimeout(() => {
                   scrollViewRef.current?.scrollToEnd({ animated: true });
                 }, 250);

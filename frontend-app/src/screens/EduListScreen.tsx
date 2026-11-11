@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import CustomAlert from '../components/CustomAlert';
 
+// 本地静态科普库：无需后端即可离线展示，避免列表页依赖网络拉取
 export const ARTICLES = [
   { id: '1', icon: '🛡️', title: '绝不向陌生账户转账', summary: '公检法机关、银行客服绝对不会通过电话要求您转账。' },
   { id: '2', icon: '⚠️', title: '警惕“高回报”投资理财', summary: '凡是号称“稳赚不赔”、“日赚千元”的网络投资，100% 都是诈骗。' },
@@ -15,6 +16,11 @@ export const ARTICLES = [
   { id: '10', icon: '🔞', title: '裸聊敲诈勒索', summary: '千万不要和陌生人视频裸聊，不点不明链接，不下载不明APP。' }
 ];
 
+/**
+ * 科普列表页：展示本地反诈文章库，点击进入详情、旁路按钮触发语音播报。
+ *
+ * @param onSelectArticle 点击卡片后的回调，向全局回传选中的文章对象。
+ */
 export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (article: any) => void }) {
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
   const playVoice = (title: string, content: string) => { 
@@ -48,7 +54,7 @@ export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (a
               <Text style={styles.cardSummary}>{article.summary}</Text>
               
               <View style={styles.cardFooter}>
-                {/* 核心修改：利用嵌套 Text 实现局部文字变红 */}
+                {/* 用嵌套 Text 只把“一键拨打”染红，突出 96110 特殊入口而非整行变色 */}
                 <Text style={styles.readMore}>
                   {isSpecial96110 ? (
                     <>

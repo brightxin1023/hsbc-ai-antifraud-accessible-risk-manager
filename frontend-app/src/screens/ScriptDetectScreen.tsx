@@ -4,12 +4,20 @@ import * as Haptics from 'expo-haptics';
 import { detectFraudApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
 
+/**
+ * 涉诈剧本扫描：把用户粘贴的可疑短信/聊天记录交给 AI 研判并展示分级结果。
+ *
+ * 结果卡片用 accessibilityLiveRegion="assertive" 主动播报，并叠加分级 Haptics，
+ * 保证视障用户无需手动定位也能第一时间感知风险等级。
+ *
+ * @param onBack 可选返回回调；由工具箱内部渲染时传入，独立使用时可不传。
+ */
 export default function ScriptDetectScreen({ onBack }: any) {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  // 用于控制滚动到底部
+  // 结果渲染后需自动滚动到底部，先持有 ScrollView 引用
   const scrollViewRef = useRef<any>(null);
 
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });

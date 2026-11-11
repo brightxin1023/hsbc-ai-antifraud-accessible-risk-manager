@@ -5,6 +5,14 @@ import { useAudioRecorder, AudioModule, RecordingPresets, setAudioModeAsync } fr
 import { registerApi, loginApi, getVoiceHintApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
 
+/**
+ * 登录/注册页：支持手机号密码登录与语音免密登录两条路径。
+ *
+ * 语音路径（手机号语音输入 / 声纹动态口令）为不方便打字的视障等人群提供
+ * 无障碍替代入口；所有交互均附带 accessibilityLabel 与 Haptics 触觉反馈。
+ *
+ * @param onLogin 登录成功后的回调，向全局回传已登录手机号。
+ */
 export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => void }) {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [phone, setPhone] = useState('');
@@ -25,7 +33,8 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
   const [voiceHint, setVoiceHint] = useState('');
   const [countdown, setCountdown] = useState(5);
 
-  // 全局自定义弹窗状态
+  // 统一走 CustomAlert 而非原生 Alert：原生 Alert 无法自定义 20/22 大字号与高对比度，
+  // 按钮语义在 iOS/Android 上不一致，且不满足读屏兼容，故用自建弹窗承载所有一次性反馈
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: 'OK' }]) => {
     setAlertConfig({ visible: true, title, message, buttons });
@@ -272,7 +281,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
         </View>
       </ScrollView>
 
-      {/* 语音采集遮罩层 */}
+      {/* 语音采集遮罩层：录音期间全屏遮罩，避免误触下方输入控件导致状态错乱 */}
       <Modal visible={showVoiceModal || isPhoneRecording} transparent={true} animationType="fade">
         <View style={styles.modalOverlay} accessibilityViewIsModal={true} accessibilityLiveRegion="assertive">
           <View style={styles.modalContent}>
@@ -305,7 +314,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
         </View>
       </Modal>
 
-      {/* 全局自定义弹窗 */}
+      {/* 全局自定义弹窗：承载注册/登录/识别等所有一次性反馈，读屏优先 */}
       <CustomAlert
         visible={alertConfig.visible}
         title={alertConfig.title}

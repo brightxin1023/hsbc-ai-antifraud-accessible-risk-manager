@@ -1,12 +1,14 @@
 import React from 'react';
 import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
 
+/** 弹窗按钮配置：text 为按钮文案，style 决定着色（默认/取消/危险）。 */
 interface ButtonConfig {
   text: string;
   onPress?: () => void;
   style?: 'default' | 'cancel' | 'destructive';
 }
 
+/** 弹窗属性：控制显隐、标题/正文与按钮列表，onClose 为必选关闭回调。 */
 interface CustomAlertProps {
   visible: boolean;
   title: string;
@@ -15,6 +17,14 @@ interface CustomAlertProps {
   onClose: () => void;
 }
 
+/**
+ * 全局统一弹窗：替代原生 Alert。
+ *
+ * 原生 Alert 无法自定义 20/22 大字号与高对比度、按钮语义在 iOS/Android 上不一致，
+ * 也不满足读屏语义；这里用 Modal 自建，保证所有告警外观与无障碍行为一致。
+ *
+ * @param props visible/title/message 控制内容，buttons 支持 destructive/cancel 样式。
+ */
 export default function CustomAlert({ visible, title, message, buttons, onClose }: CustomAlertProps) {
   if (!visible) return null;
 
@@ -23,7 +33,7 @@ export default function CustomAlert({ visible, title, message, buttons, onClose 
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay} accessibilityViewIsModal={true} accessibilityLiveRegion="assertive" accessible={false}>
-        {/* 优化点：把之前的 width: 300 改成了百分比宽度，让长标题自动撑开 */}
+        {/* 大字号 + 长标题适配：用百分比宽度而非固定 300，避免大字体下文字溢出被裁剪 */}
         <View style={styles.alertBox}>
           <View 
             style={styles.content} 
@@ -84,7 +94,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   alertBox: {
-    // 核心修改：使用百分比宽度和最大宽度限制
+    // 百分比宽度 + maxWidth 双重约束：小屏不溢出、大屏不过宽，适配大字号标题
     width: '85%', 
     maxWidth: 400, 
     backgroundColor: '#2C2C2E',
@@ -98,7 +108,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingVertical: 24,
-    paddingHorizontal: 20, // 稍微收窄了一点水平内边距
+    paddingHorizontal: 20, // 略收窄内边距，给 20 号正文留出更多可读行宽
     alignItems: 'center',
   },
   title: {
@@ -134,6 +144,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    // 用 minHeight 而非固定 height：防止大字号文字被裁切，同时保证足够触控面积
     minHeight: 55,
   },
   buttonText: {

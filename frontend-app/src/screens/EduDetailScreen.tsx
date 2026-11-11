@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import CustomAlert from '../components/CustomAlert';
 
+// 本地静态案例详情库：与列表页 ARTICLES 同源，离线即可渲染真实案例与建议
 const ARTICLE_DETAILS: any = {
   '1': { icon: '🛡️', title: '绝不向陌生账户转账', case: '张阿姨接到自称“公安局”的电话，称其涉嫌洗钱，需将资金转入“安全账户”。张阿姨信以为真，转账后发现被骗。', advice: '公检法机关绝对不会通过电话办案，也没有所谓的“安全账户”。遇到此类情况，请立即挂断并拨打 110 报警。' },
   '2': { icon: '⚠️', title: '警惕“高回报”投资理财', case: '李大爷在微信上认识了一位“理财导师”，被拉入投资群。前期小赚几笔后，李大爷投入 20 万养老钱，随后平台无法提现，导师失联。', advice: '天上不会掉馅饼。网恋对象、投资导师只要提到“稳赚不赔”、“带你赚钱”，100% 是诈骗，请立刻拉黑。' },
@@ -15,6 +16,12 @@ const ARTICLE_DETAILS: any = {
   '10': { icon: '🔞', title: '裸聊敲诈勒索', case: '大学生小张在网上结识了一名“美女”，在对方诱导下下载了不明APP并裸聊。随后对方利用木马获取了小张的通讯录，以群发不雅视频为由敲诈了 5 万元。', advice: '千万不要和陌生人视频裸聊，不点不明链接，不下载不明APP。一旦被敲诈，立即报警，绝对不要给钱。' }
 };
 
+/**
+ * 科普详情页：按 articleId 取本地案例，展示真实案例、防骗指南与语音/拨号操作。
+ *
+ * @param articleId 详情文章 id，对应 ARTICLE_DETAILS 的键。
+ * @param onBack 返回列表回调。
+ */
 export default function EduDetailScreen({ articleId, onBack }: { articleId: string, onBack: () => void }) {
   const article = ARTICLE_DETAILS[articleId];
   
@@ -53,7 +60,7 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
 
   return (
     <View style={styles.container}>
-      {/* 完全对齐流水页的顶部导航栏 */}
+      {/* 顶部返回栏复用流水页样式，保证二级页返回入口在视觉与位置上一致 */}
       <View style={styles.header}>
         <Pressable 
           style={styles.backBtn} 
@@ -130,7 +137,7 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
   
-  // 完全复用 TransactionHistoryScreen 的样式
+  // 与交易流水二级页共用同一套返回栏样式，保持全应用二级页视觉一致
   header: { backgroundColor: '#FFFFFF', paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
   backBtn: { paddingVertical: 6, paddingRight: 12, minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' },
   backBtnText: { fontSize: 20, color: '#1565C0', fontWeight: 'bold' },

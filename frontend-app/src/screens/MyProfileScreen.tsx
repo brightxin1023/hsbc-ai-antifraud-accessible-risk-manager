@@ -5,6 +5,14 @@ import * as Haptics from 'expo-haptics';
 import { useAudioRecorder, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import CustomAlert from '../components/CustomAlert';
 
+/**
+ * 我的页：集中管理账户信息、紧急联系人、附近安全网点、客服与退出登录。
+ *
+ * 语音地点搜索/定位等能力均附带无障碍标签与触觉反馈；紧急联系人支持本地编辑，
+ * 保存后通过 setEmergencyContact 回写全局，保证首页/转账页告警对象同步更新。
+ *
+ * @param props 绑定账号、退出回调与紧急联系人及其 setter。
+ */
 export default function MyProfileScreen({ userPhone, onLogout, emergencyContact, setEmergencyContact }: any) {
   const maskedPhone = userPhone ? `${userPhone.substring(0, 3)}****${userPhone.substring(7)}` : '';
   const cardTail = userPhone ? userPhone.substring(7) : '8888';
@@ -19,7 +27,7 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   const [isRecording, setIsRecording] = useState(false);
   const [voiceCountdown, setVoiceCountdown] = useState(5);
 
-  // 联系人编辑状态
+  // 编辑前先把联系人复制到临时表单状态，点“保存”才回写，避免半途修改污染全局
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [tempName, setTempName] = useState(emergencyContact.name);
   const [tempPhone, setTempPhone] = useState(emergencyContact.phone);
@@ -28,7 +36,7 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   const today = new Date();
   const dateString = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
 
-  // 辅助打码函数
+  // 脱敏展示：中间四位打码，避免完整手机号被读屏播报或被旁人窥屏
   const maskedContactPhone = emergencyContact.phone.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
 
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: '知道了' }]) => {
@@ -134,6 +142,7 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
       await recorder.stop();
       setIsRecording(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      // Mock 隔离：真实语音识别需接入 ASR 服务，此处用固定地点模拟识别结果，保证离线可演示
       const simulatedPlace = "香港大学站";
       showAlert("🎙️ 语音识别成功", `已识别到您想去：【${simulatedPlace}】。\n是否立即为您打开地图导航？`, [
         { text: "🗺️ 立即导航", onPress: () => openMap(simulatedPlace) },
@@ -187,7 +196,7 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
           <Text style={styles.accountSubtitle}>尾号 {cardTail} 储蓄卡</Text>
         </View>
 
-        {/* 修改点：更新无障碍标签与卡片文案 */}
+        {/* 位置卡片：label 前置说明用途，让读屏用户先听懂再操作 */}
         <Pressable 
           style={styles.locationCard} 
           onPress={handleGetLocation}

@@ -1,6 +1,15 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
+/**
+ * 底部导航：五个 Tab 的全局导航入口。
+ *
+ * 用 accessibilityRole="tab"/"tablist" + accessibilityState.selected 让读屏用户
+ * 能识别当前所在页；Tab 项最小高度 50 保证触控目标足够大。
+ *
+ * @param currentPage 当前页面 key。
+ * @param setCurrentPage 切换页面的回调。
+ */
 export default function BottomNav({ currentPage, setCurrentPage }: any) {
   const tabs = [
     { key: 'home', label: '首页', icon: '🏠' },
@@ -11,6 +20,7 @@ export default function BottomNav({ currentPage, setCurrentPage }: any) {
   ];
 
   return (
+    // 无障碍优化：声明此区域为 tablist，帮助读屏软件识别底部导航结构
     <View style={styles.navBar} accessibilityRole="tablist">
       {tabs.map((tab) => {
         const isSelected = currentPage === tab.key;

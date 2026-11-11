@@ -1,9 +1,14 @@
+"""后端接口集成测试：覆盖鉴权、涉诈检测、智能问答与家属告警。
+
+通过 TestClient 发起请求，并用 unittest.mock 对 users.json 文件读写以及
+AI/邮件等外部依赖打桩，保证测试可离线运行、可重复、不污染真实数据。
+"""
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch
 from main import app
 
-# 初始化测试客户端
+# 模块级复用同一个 TestClient，避免每个用例重复初始化 ASGI 应用的开销
 client = TestClient(app)
 
 # ==========================================

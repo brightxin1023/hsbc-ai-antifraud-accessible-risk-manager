@@ -1,3 +1,4 @@
+"""家属告警邮件服务：通过 QQ 邮箱 SMTP(SSL/465) 发送高危拦截或紧急求助通知。"""
 import os
 import smtplib
 from email.mime.text import MIMEText
@@ -5,9 +6,18 @@ from email.header import Header
 from email.utils import formataddr
 
 def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知用户", receiver_email: str = None):
+    """按诈骗类型组装告警邮件并发送；缺配置时静默跳过，不抛异常。
+
+    参数:
+        user_text: 触发告警的转账附言或求助文本。
+        scam_type: 诈骗类型；值为“紧急求助”时走求助模板，否则走高危拦截模板。
+        user_phone: 用户手机号，用于脱敏展示。
+        receiver_email: 家属邮箱；为空时回退到默认测试邮箱。
+    """
     sender = os.getenv("MAIL_SENDER")
     auth_code = os.getenv("MAIL_AUTH_CODE")
 
+    # 缺任一邮箱配置就静默跳过：告警是尽力而为的旁路，不应因配置缺失抛错中断主流程
     if not sender or not auth_code:
         print("未配置邮箱环境变量，跳过发送。")
         return
@@ -17,7 +27,7 @@ def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知�
     
     masked_phone = user_phone if user_phone else "未知"
 
-    # 根据scam_type判断是哪种告警，动态生成标题和正文
+    # 按告警类型分模板：紧急求助强调人身安全，其余场景强调资金阻断
     if scam_type == "紧急求助":
         subject = "【紧急求助】您的家人通过AI反诈盾发来求助"
         body = f"""【AI反诈盾 - 紧急求助通知】
@@ -40,7 +50,7 @@ def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知�
 系统已自动阻断该交易。请立即联系家人，提醒其切勿上当受骗！"""
 
     message = MIMEText(body, 'plain', 'utf-8')
-    # 👇 核心修复：这里必须是一个元组，要加双层括号
+    # formataddr 必须接收元组 (显示名, 地址)；外层括号不可少，否则会被解包成两个实参
     message['From'] = formataddr(("AI 反诈盾", sender))
     message['To'] = formataddr(("家属", receiver))
     message['Subject'] = Header(subject, 'utf-8')
