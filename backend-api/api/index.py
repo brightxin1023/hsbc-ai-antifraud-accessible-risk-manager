@@ -29,3 +29,6 @@ app.include_router(detect.router, prefix="/api", tags=["检测"])
 app.include_router(qa.router, prefix="/api", tags=["问答"])
 app.include_router(alert.router, prefix="/api", tags=["告警"])
 app.include_router(auth.router, prefix="/api/auth", tags=["鉴权"])
+
+from mangum import Mangum
+handler = Mangum(app)
