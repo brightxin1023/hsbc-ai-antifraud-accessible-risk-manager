@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, Linking } from 'react-native';
 import CustomAlert from '../components/CustomAlert';
 
 // 本地静态案例详情库：与列表页 ARTICLES 同源，离线即可渲染真实案例与建议
@@ -35,6 +35,7 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
     : '';
 
   const playVoice = () => {
+    // 此处暂时保留弹窗展示文本，真实语音播报可接入 expo-speech 或第三方 TTS
     showAlert("🔊 语音播报", fullVoiceText);
   };
 
@@ -47,7 +48,10 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
         { 
           text: "📞 立即呼叫", 
           onPress: () => {
-            showAlert("📞 正在呼叫", "正在为您接通全国反诈专线 96110...", [{ text: "OK" }]);
+            // 真实唤起系统拨号盘拨打 96110
+            Linking.openURL('tel:96110').catch(() => {
+              showAlert("提示", "您的设备不支持拨号功能或权限被拒绝。");
+            });
           }
         }
       ]

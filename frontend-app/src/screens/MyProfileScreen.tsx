@@ -156,7 +156,12 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   const handleSOSCall = () => {
     showAlert("📞 联系人工客服", "无论您是不懂操作、遇到账户异常，还是怀疑遭遇了诈骗，都可以随时联系我们的专属人工客服。是否现在呼叫？", [
       { text: "取消", style: "cancel" },
-      { text: "📞 立即呼叫", onPress: () => showAlert("📞 正在接通", "正在为您转接专属人工客服，请稍候...", [{ text: "OK" }]) }
+      { text: "📞 立即呼叫", onPress: () => {
+        // 真实拨打银行客服电话
+        Linking.openURL('tel:95588').catch(() => {
+          showAlert("提示", "您的设备不支持拨号功能。");
+        });
+      }}
     ]);
   };
 
