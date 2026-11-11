@@ -1,5 +1,5 @@
-// 真机联调时指向后端宿主机 IP；模拟器可改用 localhost，改这里即可全局切换
-export const BASE_URL = 'http://172.20.10.3:8000'; 
+//云端生产环境后端接口地址。已部署至 Vercel Serverless 平台，以便评委在任何网络环境下（无需保持本地电脑开机）都能真实体验完整的 AI 语义检测与 SMTP 真实邮件发送功能。
+export const BASE_URL = 'https://hsbc-ai-antifraud-accessible-risk-m-topaz.vercel.app';
 
 /**
  * 涉诈剧本/转账文本检测。
