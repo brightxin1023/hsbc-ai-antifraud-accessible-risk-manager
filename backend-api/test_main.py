@@ -6,7 +6,7 @@ AI/邮件等外部依赖打桩，保证测试可离线运行、可重复、不�
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch
-from index import app
+from api.index import app
 
 # 模块级复用同一个 TestClient，避免每个用例重复初始化 ASGI 应用的开销
 client = TestClient(app)
