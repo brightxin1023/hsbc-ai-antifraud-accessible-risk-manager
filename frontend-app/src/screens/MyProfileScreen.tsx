@@ -200,7 +200,7 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
               <Text style={{ fontSize: 24 }} accessible={false}>📍</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.locationTitle}>附近安全网点</Text>
+              <Text style={styles.locationTitle}>我的位置与附近安全网点</Text>
               <Text style={styles.locationDesc} numberOfLines={1}>
                 {loadingLocation ? '正在获取定位...' : (locationText || '定位，找银行/警局，语音导航')}
               </Text>
