@@ -51,9 +51,9 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
       timer = setTimeout(async () => {
         await recorder.stop();
         setIsPhoneRecording(false);
-        setPhone('13800138000'); 
+        setPhone('17627882752'); 
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-        showAlert("识别成功", "已为您自动填入手机号：13800138000");
+        showAlert("识别成功", "已为您自动填入手机号：17627882752");
       }, 10000);
     }
     return () => {
