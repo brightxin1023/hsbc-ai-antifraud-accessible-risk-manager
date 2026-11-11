@@ -12,11 +12,11 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
  */
 export default function BottomNav({ currentPage, setCurrentPage }: any) {
   const tabs = [
-    { key: 'home', label: '首页', icon: '🏠' },
-    { key: 'transfer', label: '转账', icon: '💸' },
-    { key: 'tools', label: '工具箱', icon: '🧰' },
-    { key: 'edu', label: '科普', icon: '📖' },
-    { key: 'profile', label: '我的', icon: '👤' },
+    { key: 'home', label: '首页', icon: '房子' },
+    { key: 'transfer', label: '转账', icon: '钞票' },
+    { key: 'tools', label: '工具箱', icon: '箱子' },
+    { key: 'edu', label: '科普', icon: '书籍' },
+    { key: 'profile', label: '我的', icon: '人像' },
   ];
 
   return (
@@ -34,7 +34,12 @@ export default function BottomNav({ currentPage, setCurrentPage }: any) {
             accessibilityLabel={`${tab.label}${isSelected ? '，当前已选中' : ''}`}
           >
             <Text style={styles.navIcon} accessible={false}>{tab.icon}</Text>
-            <Text style={[styles.navText, isSelected && styles.navTextActive]}>
+            {/* 新增注释：强制单行显示并允许自动缩放，防止超大字号下文字竖排 */}
+            <Text 
+              style={[styles.navText, isSelected && styles.navTextActive]}
+              numberOfLines={1}
+              adjustsFontSizeToFit={true}
+            >
               {tab.label}
             </Text>
           </Pressable>

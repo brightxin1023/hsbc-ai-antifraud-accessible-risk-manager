@@ -29,11 +29,11 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       [
         { text: "取消", style: "cancel" },
         { 
-          text: "📞 一键呼叫人工客服", 
+          text: "一键呼叫人工客服", 
           onPress: () => {
-            showAlert("📞 正在接通", "正在为您转接反诈专属人工客服...", [{ text: "OK", onPress: () => {
+            showAlert("正在接通", "正在为您转接反诈专属人工客服...", [{ text: "OK", onPress: () => {
               onUnfreeze(); 
-              showAlert("✅ 解冻成功", "人工客服已为您核实身份，账户已恢复正常使用。请警惕陌生转账！");
+              showAlert("解冻成功", "人工客服已为您核实身份，账户已恢复正常使用。请警惕陌生转账！");
             }}]);
           } 
         }
@@ -42,22 +42,22 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
   };
 
   const handleCallFamily = () => {
-    showAlert("📞 呼叫紧急联系人", `是否立即致电您的紧急联系人【${emergencyContact.name}】？`, [
+    showAlert("呼叫紧急联系人", `是否立即致电您的紧急联系人【${emergencyContact.name}】？`, [
       { text: "取消", style: "cancel" },
-      { text: "📞 立即致电", onPress: () => showAlert("📞 正在呼叫", `正在呼叫【${emergencyContact.name}】(${maskedContactPhone})...`) }
+      { text: "立即致电", onPress: () => showAlert("正在呼叫", `正在呼叫【${emergencyContact.name}】(${maskedContactPhone})...`) }
     ]);
   };
 
   const handleEmailAlert = () => {
-    showAlert("✉️ 发送紧急告警", `将向紧急联系人【${emergencyContact.name}】发送紧急求助邮件，是否确认？`, [
+    showAlert("发送紧急告警", `将向紧急联系人【${emergencyContact.name}】发送紧急求助邮件，是否确认？`, [
       { text: "取消", style: "cancel" },
-      { text: "✉️ 确认发送", onPress: async () => {
+      { text: "确认发送", onPress: async () => {
         try {
           // 用紧急联系人邮箱作为收件人，确保告警落到真实联系人而非默认测试邮箱
           await alertFamilyApi("", "紧急求助", userPhone, emergencyContact.email);
-          showAlert("✅ 发送成功", `紧急求助邮件已发送至【${emergencyContact.name}】的邮箱。`);
+          showAlert("发送成功", `紧急求助邮件已发送至【${emergencyContact.name}】的邮箱。`);
         } catch (error) {
-          showAlert("❌ 发送失败", "网络异常，请稍后重试。");
+          showAlert("发送失败", "网络异常，请稍后重试。");
         }
       }}
     ]);
@@ -70,22 +70,23 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         {isFrozen && (
           <View style={styles.frozenBanner} accessibilityLiveRegion="polite">
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-              <Text style={{ fontSize: 24, marginRight: 8 }} accessible={false}>🛡️</Text>
+              <Text style={{ fontSize: 24, marginRight: 8 }} accessible={false}>盾牌</Text>
               <Text style={styles.frozenBannerTitle}>账户已进入安全保护状态</Text>
             </View>
             <Text style={styles.frozenBannerText}>
               检测到高危风险，资金已自动拦截。保护期间，您的工资入账及日常水电费自动扣款均不受影响。
             </Text>
             <Pressable style={styles.appealBtn} onPress={handleAppeal} accessibilityRole="button" accessibilityLabel="呼叫人工客服申诉解冻">
-              <Text style={styles.appealBtnText}>📞 呼叫人工客服申诉解冻</Text>
+              <Text style={styles.appealBtnText}>呼叫人工客服申诉解冻</Text>
             </Pressable>
           </View>
         )}
 
         <View style={styles.headerCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ fontSize: 40, marginRight: 16 }} accessible={false}>🛡️</Text>
-            <View>
+            <Text style={{ fontSize: 40, marginRight: 16 }} accessible={false}>盾牌</Text>
+            {/* 新增注释：添加 flex 1 防止大字号下文字溢出容器 */}
+            <View style={{ flex: 1 }}>
               <Text style={styles.headerTitle} accessibilityRole="header">反诈防护已全面开启</Text>
               <Text style={styles.headerSubtitle}>智能风控正在实时守护您的资金</Text>
             </View>
@@ -94,18 +95,19 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
 
         <View style={styles.familyCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-            <Text style={{ fontSize: 32, marginRight: 12 }} accessible={false}>👨‍👩‍👧</Text>
-            <View>
+            <Text style={{ fontSize: 32, marginRight: 12 }} accessible={false}>家庭</Text>
+            {/* 新增注释：添加 flex 1 防止大字号下文字溢出容器 */}
+            <View style={{ flex: 1 }}>
               <Text style={styles.familyTitle}>家庭安全守护已开启</Text>
               <Text style={styles.familyDesc}>紧急联系人：{emergencyContact.name}</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <Pressable style={[styles.familyBtn, { backgroundColor: '#1565C0', flex: 1 }]} onPress={handleCallFamily} accessibilityRole="button" accessibilityLabel={`呼叫紧急联系人${emergencyContact.name}`}>
-              <Text style={styles.familyBtnText}>📞 呼叫</Text>
+              <Text style={styles.familyBtnText}>呼叫</Text>
             </Pressable>
             <Pressable style={[styles.familyBtn, { backgroundColor: '#D32F2F', flex: 1 }]} onPress={handleEmailAlert} accessibilityRole="button" accessibilityLabel={`发送紧急告警邮件给${emergencyContact.name}`}>
-              <Text style={styles.familyBtnText}>✉️ 告警</Text>
+              <Text style={styles.familyBtnText}>告警</Text>
             </Pressable>
           </View>
         </View>
@@ -128,10 +130,10 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
                 <View style={styles.txLeft}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
                     <Text style={styles.txTitle}>{tx.title}</Text>
-                    {tx.isAbnormal && (<View style={styles.badgeError}><Text style={styles.badgeErrorText}>🛑 异常拦截</Text></View>)}
-                    {tx.isRisk === 'high' && !tx.isAbnormal && (<View style={styles.badgeHighRisk}><Text style={styles.badgeHighRiskText}>🚨 高危交易</Text></View>)}
-                    {tx.isRisk === 'medium' && !tx.isAbnormal && (<View style={styles.badgeWarning}><Text style={styles.badgeWarningText}>⚠️ 可疑交易</Text></View>)}
-                    {(!tx.isRisk || tx.isRisk === 'low') && !tx.isAbnormal && (<View style={styles.badgeLowRisk}><Text style={styles.badgeLowRiskText}>✅ 安全交易</Text></View>)}
+                    {tx.isAbnormal && (<View style={styles.badgeError}><Text style={styles.badgeErrorText}>异常拦截</Text></View>)}
+                    {tx.isRisk === 'high' && !tx.isAbnormal && (<View style={styles.badgeHighRisk}><Text style={styles.badgeHighRiskText}>高危交易</Text></View>)}
+                    {tx.isRisk === 'medium' && !tx.isAbnormal && (<View style={styles.badgeWarning}><Text style={styles.badgeWarningText}>可疑交易</Text></View>)}
+                    {(!tx.isRisk || tx.isRisk === 'low') && !tx.isAbnormal && (<View style={styles.badgeLowRisk}><Text style={styles.badgeLowRiskText}>安全交易</Text></View>)}
                   </View>
                   <Text style={styles.txTime}>{tx.time}</Text>
                 </View>
@@ -151,7 +153,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         </View>
 
         <Pressable style={styles.viewAllBtn} onPress={onViewAllTransactions} accessibilityRole="button" accessibilityLabel="查看全部交易流水">
-          <Text style={styles.viewAllBtnText}>查看全部交易流水 →</Text>
+          <Text style={styles.viewAllBtnText}>查看全部交易流水</Text>
         </Pressable>
       </ScrollView>
 
