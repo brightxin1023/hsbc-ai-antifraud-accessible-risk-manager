@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
+import * as Speech from 'expo-speech';
 import CustomAlert from '../components/CustomAlert';
 
 // 本地静态科普库：无需后端即可离线展示，避免列表页依赖网络拉取
@@ -17,14 +18,20 @@ export const ARTICLES = [
 ];
 
 /**
- * 科普列表页：展示本地反诈文章库，点击进入详情、旁路按钮触发语音播报。
+ * 科普列表页：展示本地反诈文章库，点击进入详情、旁路按钮触发真实语音播报。
  *
  * @param onSelectArticle 点击卡片后的回调，向全局回传选中的文章对象。
  */
 export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (article: any) => void }) {
-  const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
   const playVoice = (title: string, content: string) => { 
-    setAlertConfig({ visible: true, title: "🔊 语音播报", message: `${title}。${content}` });
+    // 停止当前正在播放的语音
+    Speech.stop();
+    // 调用系统 TTS 进行真实朗读
+    Speech.speak(`${title}。${content}`, {
+      language: 'zh-CN',
+      pitch: 1.0,
+      rate: 0.9, // 稍微放慢语速，方便老年人听清
+    });
   };
 
   return (
@@ -79,14 +86,6 @@ export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (a
         })}
         <View style={{ height: 40 }} />
       </ScrollView>
-
-      <CustomAlert
-        visible={alertConfig.visible}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        buttons={[{ text: '关闭', onPress: () => {} }]}
-        onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
-      />
     </View>
   );
 }

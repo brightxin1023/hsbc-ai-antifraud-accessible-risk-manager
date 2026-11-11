@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, Linking } from 'react-native';
+import * as Speech from 'expo-speech';
 import CustomAlert from '../components/CustomAlert';
 
 // 本地静态案例详情库：与列表页 ARTICLES 同源，离线即可渲染真实案例与建议
@@ -17,7 +18,7 @@ const ARTICLE_DETAILS: any = {
 };
 
 /**
- * 科普详情页：按 articleId 取本地案例，展示真实案例、防骗指南与语音/拨号操作。
+ * 科普详情页：按 articleId 取本地案例，展示真实案例、防骗指南与真实语音/拨号操作。
  *
  * @param articleId 详情文章 id，对应 ARTICLE_DETAILS 的键。
  * @param onBack 返回列表回调。
@@ -35,8 +36,14 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
     : '';
 
   const playVoice = () => {
-    // 此处暂时保留弹窗展示文本，真实语音播报可接入 expo-speech 或第三方 TTS
-    showAlert("🔊 语音播报", fullVoiceText);
+    // 停止当前正在播放的语音
+    Speech.stop();
+    // 调用系统 TTS 进行真实朗读
+    Speech.speak(fullVoiceText, {
+      language: 'zh-CN',
+      pitch: 1.0,
+      rate: 0.9,
+    });
   };
 
   const handleCall96110 = () => {
