@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, Linking } from 'react-native';
 import * as Speech from 'expo-speech';
 import CustomAlert from '../components/CustomAlert';
@@ -27,6 +27,16 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
   const article = ARTICLE_DETAILS[articleId];
   
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
+  // 记录当前是否正在播报
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // 离开详情页时（返回列表等），自动停止语音播报
+  useEffect(() => {
+    return () => {
+      Speech.stop();
+    };
+  }, []);
+
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: 'OK' }]) => {
     setAlertConfig({ visible: true, title, message, buttons });
   };
@@ -36,17 +46,34 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
     : '';
 
   const playVoice = () => {
-    // 停止当前正在播放的语音
+    // 如果当前正在播报，点击则停止
+    if (isPlaying) {
+      Speech.stop();
+      setIsPlaying(false);
+      return;
+    }
+
+    // 否则开始播报
     Speech.stop();
     // 调用系统 TTS 进行真实朗读
     Speech.speak(fullVoiceText, {
       language: 'zh-CN',
       pitch: 1.0,
       rate: 0.9,
+      onDone: () => setIsPlaying(false),
+      onStopped: () => setIsPlaying(false),
+      onError: () => setIsPlaying(false),
     });
+    setIsPlaying(true);
   };
 
   const handleCall96110 = () => {
+    // 拨号前强制打断语音播报
+    if (isPlaying) {
+      Speech.stop();
+      setIsPlaying(false);
+    }
+
     showAlert(
       "📞 呼叫全国反诈专线",
       "是否立即拨打 96110 进行咨询？",

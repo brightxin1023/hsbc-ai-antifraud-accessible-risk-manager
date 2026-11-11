@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import * as Speech from 'expo-speech';
 
@@ -22,15 +22,39 @@ export const ARTICLES = [
  * @param onSelectArticle 点击卡片后的回调，向全局回传选中的文章对象。
  */
 export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (article: any) => void }) {
-  const playVoice = (title: string, content: string) => { 
-    // 停止当前正在播放的语音
+  // 记录当前正在播报的文章 ID，用于实现播放/停止的切换
+  const [playingId, setPlayingId] = useState<string | null>(null);
+
+  // 页面卸载（切换 Tab 或进入详情页）时，自动停止语音播报
+  useEffect(() => {
+    return () => {
+      Speech.stop();
+    };
+  }, []);
+
+  const playVoice = (title: string, content: string, id: string) => { 
+    // 如果当前点击的是正在播报的文章，则直接停止
+    if (playingId === id) {
+      Speech.stop();
+      setPlayingId(null);
+      return;
+    }
+
+    // 如果点击的是另一篇，先停止之前的播放
     Speech.stop();
+    
     // 调用系统 TTS 进行真实朗读
     Speech.speak(`${title}。${content}`, {
       language: 'zh-CN',
       pitch: 1.0,
       rate: 0.9, // 稍微放慢语速，方便老年人听清
+      onDone: () => setPlayingId(null),      // 播报完毕自动重置状态
+      onStopped: () => setPlayingId(null),   // 手动停止或被打断时重置状态
+      onError: () => setPlayingId(null),     // 发生错误时重置状态
     });
+    
+    // 更新当前正在播报的 ID
+    setPlayingId(id);
   };
 
   return (
@@ -73,7 +97,7 @@ export default function EduListScreen({ onSelectArticle }: { onSelectArticle: (a
                 
                 <Pressable 
                   style={styles.voiceBtnSmall} 
-                  onPress={(e) => { e.stopPropagation(); playVoice(article.title, article.summary); }} 
+                  onPress={(e) => { e.stopPropagation(); playVoice(article.title, article.summary, article.id); }} 
                   accessibilityRole="button" 
                   accessibilityLabel={`语音播报：${article.title}`}
                 >
