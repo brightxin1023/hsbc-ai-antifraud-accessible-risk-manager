@@ -147,12 +147,10 @@ export default function EduDetailScreen({ articleId, onBack }: { articleId: stri
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
-  
   // 与交易流水二级页共用同一套返回栏样式，保持全应用二级页视觉一致
   header: { backgroundColor: '#FFFFFF', paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
   backBtn: { paddingVertical: 6, paddingRight: 12, minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' },
   backBtnText: { fontSize: 20, color: '#1565C0', fontWeight: 'bold' },
-  
   content: { padding: 20 },
   largeIcon: { fontSize: 60, textAlign: 'center', marginBottom: 15 },
   title: { fontSize: 26, fontWeight: 'bold', color: '#D32F2F', textAlign: 'center', marginBottom: 25, lineHeight: 36 },

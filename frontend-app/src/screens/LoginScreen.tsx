@@ -53,7 +53,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
         setIsPhoneRecording(false);
         setPhone('17627882752'); 
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-        showAlert("识别成功", "已为您自动填入手机号：17627882752");
+        showAlert("✅ 识别成功", "已为您自动填入手机号：17627882752");
       }, 10000);
     }
     return () => {
@@ -67,7 +67,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
     if (isRecording) return; 
     try {
       const status = await AudioModule.requestRecordingPermissionsAsync();
-      if (!status.granted) return showAlert("权限被拒绝", "请在设置中允许麦克风权限");
+      if (!status.granted) return showAlert("⚠️ 权限被拒绝", "请在设置中允许麦克风权限");
 
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
       await recorder.prepareToRecordAsync();
@@ -77,7 +77,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
       setPhoneCountdown(10);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
     } catch (err) {
-      showAlert("错误", "麦克风启动失败");
+      showAlert("❌ 错误", "麦克风启动失败");
     }
   };
 
@@ -100,7 +100,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
       setShowVoiceModal(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       
-      showAlert("声纹匹配成功", "系统已成功验证您的动态口令，为您安全登录。", [
+      showAlert("✅ 声纹匹配成功", "系统已成功验证您的动态口令，为您安全登录。", [
         { text: "进入应用", onPress: () => onLogin(phone) }
       ]);
     } catch (error) {
@@ -111,7 +111,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
 
   const handleVoiceVerify = async () => {
     Keyboard.dismiss();
-    if (phone.length !== 11) return showAlert("提示", "请先输入 11 位手机号");
+    if (phone.length !== 11) return showAlert("⚠️ 提示", "请先输入 11 位手机号");
     if (isRecording || isPhoneRecording) return;
 
     try {
@@ -121,12 +121,12 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
       setLoading(false);
     } catch (error: any) {
       setLoading(false);
-      return showAlert("验证失败", error.message);
+      return showAlert("❌ 验证失败", error.message);
     }
 
     try {
       const status = await AudioModule.requestRecordingPermissionsAsync();
-      if (!status.granted) return showAlert("权限被拒绝", "请在手机设置中允许该应用使用麦克风");
+      if (!status.granted) return showAlert("⚠️ 权限被拒绝", "请在手机设置中允许该应用使用麦克风");
 
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
       await recorder.prepareToRecordAsync();
@@ -139,26 +139,26 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
     } catch (err) {
       setIsRecording(false);
       setShowVoiceModal(false);
-      showAlert("错误", "录音功能启动失败");
+      showAlert("❌ 错误", "录音功能启动失败");
     }
   };
 
   const handleAuth = async () => {
     Keyboard.dismiss();
-    if (phone.length !== 11) return showAlert("提示", "请输入正确的 11 位手机号");
-    if (password.length !== 6) return showAlert("提示", "为了您的账户安全，密码必须为 6 位纯数字");
-    if (!isLoginMode && password !== confirmPassword) return showAlert("提示", "两次输入的密码不一致");
+    if (phone.length !== 11) return showAlert("⚠️ 提示", "请输入正确的 11 位手机号");
+    if (password.length !== 6) return showAlert("⚠️ 提示", "为了您的账户安全，密码必须为 6 位纯数字");
+    if (!isLoginMode && password !== confirmPassword) return showAlert("⚠️ 提示", "两次输入的密码不一致");
 
     setLoading(true);
     if (!isLoginMode) {
       try {
         await registerApi(phone, password);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-        showAlert("注册成功", "请使用刚刚的密码进行登录", [
+        showAlert("✅ 注册成功", "请使用刚刚的密码进行登录", [
           { text: "去登录", onPress: () => { setIsLoginMode(true); setPassword(''); setConfirmPassword(''); } }
         ]);
       } catch (error: any) {
-        showAlert("注册失败", error.message);
+        showAlert("❌ 注册失败", error.message);
       } finally {
         setLoading(false);
       }
@@ -170,12 +170,12 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
       } catch (error: any) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
         if (error.message.includes("未注册")) {
-          showAlert("账号不存在", "该手机号尚未注册，是否立即前往注册？", [
+          showAlert("⚠️ 账号不存在", "该手机号尚未注册，是否立即前往注册？", [
             { text: "取消", style: "cancel" },
             { text: "去注册", onPress: () => { setIsLoginMode(false); setPassword(''); } }
           ]);
         } else {
-          showAlert("登录失败", error.message);
+          showAlert("❌ 登录失败", error.message);
         }
       } finally {
         setLoading(false);

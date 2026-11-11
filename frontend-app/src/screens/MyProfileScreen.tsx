@@ -368,41 +368,33 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
   scrollContent: { paddingHorizontal: 20, paddingTop: 15, paddingBottom: 100 },
-  
   headerBox: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
   pageTitle: { fontSize: 32, fontWeight: 'bold', color: '#1A1A1A', letterSpacing: 1 },
   pageSubtitle: { fontSize: 16, color: '#666', marginTop: 4 },
-  
   dateContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F0FE', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 22, marginTop: 6 },
   dateText: { fontSize: 19, color: '#1565C0', fontWeight: 'bold' },
-  
   accountCard: { backgroundColor: '#2E7D32', padding: 20, borderRadius: 16, marginBottom: 16, elevation: 4 },
   accountTitle: { color: 'white', fontSize: 24, fontWeight: 'bold' },
   accountSubtitle: { color: 'white', fontSize: 18, marginTop: 6 },
-
   locationCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', borderRadius: 16, paddingVertical: 16, paddingHorizontal: 20, marginBottom: 16, elevation: 2 },
   locationLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 },
   iconWrapper: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#FFF3E0', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
   locationTitle: { fontSize: 20, fontWeight: 'bold', color: '#333' },
   locationDesc: { fontSize: 16, color: '#666', marginTop: 4 },
-  
   contactCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E3F2FD', borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#BBDEFB' },
   contactTitle: { fontSize: 20, fontWeight: 'bold', color: '#1565C0' },
   contactDesc: { fontSize: 16, color: '#0D47A1', marginTop: 4 },
   editBtn: { backgroundColor: 'white', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#90CAF9', marginLeft: 10 },
   editBtnText: { fontSize: 16, color: '#1565C0', fontWeight: 'bold' },
-  
   menuRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24, gap: 12 },
   menuCard: { flex: 1, backgroundColor: 'white', borderRadius: 16, paddingVertical: 16, alignItems: 'center', elevation: 2 },
   menuIconLarge: { fontSize: 28, marginBottom: 8 },
   menuText: { fontSize: 18, color: '#333', fontWeight: '500' },
   menuArrow: { fontSize: 24, color: '#666666' }, 
-  
   sosBtn: { backgroundColor: '#FFA000', padding: 20, borderRadius: 16, alignItems: 'center', marginBottom: 16, minHeight: 64, elevation: 2 },
   sosBtnText: { color: '#1A1A1A', fontSize: 22, fontWeight: 'bold' }, 
   logoutBtn: { backgroundColor: '#D32F2F', padding: 20, borderRadius: 16, alignItems: 'center', minHeight: 64, elevation: 2 },
   logoutBtnText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
-
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { backgroundColor: 'white', width: '90%', borderRadius: 20, padding: 24, elevation: 10 },
   modalTitle: { fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 20, textAlign: 'center' },
@@ -413,7 +405,6 @@ const styles = StyleSheet.create({
   cancelBtnText: { fontSize: 18, color: '#666', fontWeight: 'bold' },
   saveBtn: { flex: 1, backgroundColor: '#1565C0', padding: 16, borderRadius: 10, alignItems: 'center' },
   saveBtnText: { fontSize: 18, color: 'white', fontWeight: 'bold' },
-
   voiceModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   voiceModalContent: { backgroundColor: 'white', width: '90%', borderRadius: 24, padding: 35, alignItems: 'center' },
   voiceModalTitle: { fontSize: 30, fontWeight: 'bold', color: '#D32F2F', marginBottom: 15 },

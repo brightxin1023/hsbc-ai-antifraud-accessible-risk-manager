@@ -340,22 +340,16 @@ const styles = StyleSheet.create({
   pageTitle: { fontSize: 28, fontWeight: 'bold', color: '#333', marginTop: 10 },
   pageSubtitle: { fontSize: 18, color: '#666', marginBottom: 25 },
   formCard: { backgroundColor: 'white', borderRadius: 16, padding: 20, marginBottom: 20, elevation: 2 },
-  
   label: { fontSize: 20, fontWeight: 'bold', color: '#333', marginBottom: 8, marginTop: 15 },
-  
   input: { borderBottomWidth: 1, borderBottomColor: '#eee', paddingVertical: 14, fontSize: 22, marginBottom: 5, color: '#333', minHeight: 50 },
   bankInfoText: { fontSize: 16, color: '#2E7D32', fontWeight: 'bold', marginBottom: 10 },
-  
   amountWrapper: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#eee', marginBottom: 10, paddingVertical: 12, minHeight: 65 },
   currencySymbol: { fontSize: 32, fontWeight: 'bold', marginRight: 10, color: '#333' },
   amountInput: { fontSize: 42, fontWeight: 'bold', flex: 1, color: '#333' },
-  
   textArea: { borderWidth: 1, borderColor: '#eee', borderRadius: 8, padding: 15, fontSize: 22, minHeight: 120, marginBottom: 10, backgroundColor: '#fafafa', color: '#333' },
-  
   actionBtn: { backgroundColor: '#D32F2F', padding: 22, borderRadius: 12, alignItems: 'center', marginBottom: 15, minHeight: 60 },
   buttonText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
   securityTip: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 20, lineHeight: 24 },
-  
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { width: '100%', borderRadius: 20, padding: 30, alignItems: 'center', elevation: 10 },
   modalIcon: { fontSize: 70, marginBottom: 15 },

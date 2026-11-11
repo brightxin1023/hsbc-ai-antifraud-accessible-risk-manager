@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
 import * as Speech from 'expo-speech';
-import CustomAlert from '../components/CustomAlert';
 
 // 本地静态科普库：无需后端即可离线展示，避免列表页依赖网络拉取
 export const ARTICLES = [
@@ -101,12 +100,8 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 22, fontWeight: 'bold', color: '#000', flex: 1 },
   cardSummary: { fontSize: 18, color: '#333', lineHeight: 28, marginBottom: 15 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  
-  // 通用文字颜色
   readMore: { fontSize: 16, color: '#1565C0', fontWeight: 'bold' }, 
-  // 局部强调色
   textRed: { color: '#D32F2F' },
-  
   voiceBtnSmall: { backgroundColor: '#E3F2FD', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 8 },
   voiceBtnTextSmall: { color: '#1565C0', fontSize: 18, fontWeight: 'bold' }, 
 });

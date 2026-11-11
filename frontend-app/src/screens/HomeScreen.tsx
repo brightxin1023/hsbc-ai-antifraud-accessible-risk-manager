@@ -5,9 +5,16 @@ import CustomAlert from '../components/CustomAlert';
 
 /**
  * 首页：展示账户安全状态、家庭守护入口与最近三笔交易流水。
+ *
+ * 只渲染最新 3 条流水（聚焦 + 减少渲染开销），完整流水经 onViewAllTransactions
+ * 进入二级页；冻结横幅与家庭告警统一走 CustomAlert，维持大字号与读屏语义。
+ *
+ * @param props 全局状态与回调的透传参数。
  */
 export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions, onUnfreeze, onViewAllTransactions, emergencyContact }: any) {
   const recentTransactions = transactions.slice(0, 3);
+  
+  // 脱敏展示：中间四位打码，避免完整手机号被读屏播报或被旁人窥屏
   const maskedContactPhone = emergencyContact.phone.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
 
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
@@ -17,13 +24,14 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
 
   const handleAppeal = () => {
     showAlert(
-      "解除冻结（申诉）", 
+      "🛡️ 解除冻结（申诉）", 
       "为了保护您的资金安全，当前账户已限制出账。如需解冻，请呼叫人工客服核实身份。",
       [
         { text: "取消", style: "cancel" },
         { 
-          text: "一键呼叫人工客服", 
+          text: "📞 一键呼叫人工客服", 
           onPress: () => {
+            // 真实唤起系统拨号盘拨打客服（演示用 95588）
             Linking.openURL('tel:95588').catch(() => {
               showAlert("提示", "您的设备不支持拨号功能。");
             });
@@ -34,9 +42,10 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
   };
 
   const handleCallFamily = () => {
-    showAlert("呼叫紧急联系人", `是否立即致电您的紧急联系人【${emergencyContact.name}】(${maskedContactPhone})？`, [
+    showAlert("📞 呼叫紧急联系人", `是否立即致电您的紧急联系人【${emergencyContact.name}】(${maskedContactPhone})？`, [
       { text: "取消", style: "cancel" },
-      { text: "立即致电", onPress: () => {
+      { text: "📞 立即致电", onPress: () => {
+        // 真实唤起系统拨号盘拨打紧急联系人
         Linking.openURL(`tel:${emergencyContact.phone}`).catch(() => {
           showAlert("提示", "您的设备不支持拨号功能。");
         });
@@ -45,14 +54,15 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
   };
 
   const handleEmailAlert = () => {
-    showAlert("发送紧急告警", `将向紧急联系人【${emergencyContact.name}】发送紧急求助邮件，是否确认？`, [
+    showAlert("✉️ 发送紧急告警", `将向紧急联系人【${emergencyContact.name}】发送紧急求助邮件，是否确认？`, [
       { text: "取消", style: "cancel" },
-      { text: "确认发送", onPress: async () => {
+      { text: "✉️ 确认发送", onPress: async () => {
         try {
+          // 用紧急联系人邮箱作为收件人，确保告警落到真实联系人而非默认测试邮箱
           await alertFamilyApi("", "紧急求助", userPhone, emergencyContact.email);
-          showAlert("发送成功", `紧急求助邮件已发送至【${emergencyContact.name}】的邮箱。`);
+          showAlert("✅ 发送成功", `紧急求助邮件已发送至【${emergencyContact.name}】的邮箱。`);
         } catch (error) {
-          showAlert("发送失败", "网络异常，请稍后重试。");
+          showAlert("❌ 发送失败", "网络异常，请稍后重试。");
         }
       }}
     ]);
@@ -72,7 +82,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
               检测到高危风险，资金已自动拦截。保护期间，您的工资入账及日常水电费自动扣款均不受影响。
             </Text>
             <Pressable style={styles.appealBtn} onPress={handleAppeal} accessibilityRole="button" accessibilityLabel="呼叫人工客服申诉解冻">
-              <Text style={styles.appealBtnText}>呼叫人工客服申诉解冻</Text>
+              <Text style={styles.appealBtnText}>📞 呼叫人工客服申诉解冻</Text>
             </Pressable>
           </View>
         )}
@@ -80,6 +90,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         <View style={styles.headerCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={{ fontSize: 40, marginRight: 16 }} accessible={false}>🛡️</Text>
+            {/* 添加 flex 1 防止大字号下文字溢出容器 */}
             <View style={{ flex: 1 }}>
               <Text style={styles.headerTitle} accessibilityRole="header">反诈防护已全面开启</Text>
               <Text style={styles.headerSubtitle}>智能风控正在实时守护您的资金</Text>
@@ -90,6 +101,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         <View style={styles.familyCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
             <Text style={{ fontSize: 32, marginRight: 12 }} accessible={false}>👨‍👩‍👧</Text>
+            {/* 添加 flex 1 防止大字号下文字溢出容器 */}
             <View style={{ flex: 1 }}>
               <Text style={styles.familyTitle}>家庭安全守护已开启</Text>
               <Text style={styles.familyDesc}>紧急联系人：{emergencyContact.name}</Text>
@@ -97,10 +109,10 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
           </View>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <Pressable style={[styles.familyBtn, { backgroundColor: '#1565C0', flex: 1 }]} onPress={handleCallFamily} accessibilityRole="button" accessibilityLabel={`呼叫紧急联系人${emergencyContact.name}`}>
-              <Text style={styles.familyBtnText}>呼叫</Text>
+              <Text style={styles.familyBtnText}>📞 呼叫</Text>
             </Pressable>
             <Pressable style={[styles.familyBtn, { backgroundColor: '#D32F2F', flex: 1 }]} onPress={handleEmailAlert} accessibilityRole="button" accessibilityLabel={`发送紧急告警邮件给${emergencyContact.name}`}>
-              <Text style={styles.familyBtnText}>告警</Text>
+              <Text style={styles.familyBtnText}>✉️ 告警</Text>
             </Pressable>
           </View>
         </View>
