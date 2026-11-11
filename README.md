@@ -45,7 +45,7 @@
 
 - **完美支持读屏 (Screen Reader Compatible)**：全站所有交互控件均配置了语义化标签 (`accessibilityRole`、`accessibilityLabel`)；列表项进行连贯的无障碍焦点合并朗读；所有弹窗强制使用 `accessibilityViewIsModal={true}` 锁定焦点，防止焦点穿透。
 - **视觉与色彩对比度 (High Contrast)**：剔除低对比度浅灰，正文文字统一加深至 `#666` 或 `#767676`（白底对比度达 4.54:1+）；核心操作蓝色改为 `#1565C0`，警示红为 `#D32F2F`。
-- **大字号与自适应布局 (Large Typography)**：正文最低 20px，金额输入框高达 42px，核心按钮最小高度 56pt。全局弃用固定 `height`，改用 `minHeight` 与 `padding`，杜绝文字截断。
+- **大字号与自适应布局 (Large Typography)**：正文最低 20px，金额输入框高达 42px，核心按钮最小高度 56pt。针对系统大字号模式，全局弃用固定 `height` 改用 `minHeight`，并修复宽度溢出（`flex: 1` 与文本收缩），避免截断。
 - **触控与防遮挡 (Touch Targets)**：按钮及返回键增加 `hitSlop` 扩大隐藏触控热区；底部滚动视图统一增加 `paddingBottom`，防止内容被遮挡。
 
 ## 🛠️ 技术架构 (Tech Stack)
