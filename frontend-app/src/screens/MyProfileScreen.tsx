@@ -10,7 +10,8 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   const cardTail = userPhone ? userPhone.substring(7) : '8888';
 
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
-  const [locationText, setLocationText] = useState('点击获取当前位置');
+  // 初始为空，由 UI 渲染默认副标题
+  const [locationText, setLocationText] = useState(''); 
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [currentCoords, setCurrentCoords] = useState<{ lat: number, lng: number } | null>(null);
 
@@ -22,7 +23,7 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [tempName, setTempName] = useState(emergencyContact.name);
   const [tempPhone, setTempPhone] = useState(emergencyContact.phone);
-  const [tempEmail, setTempEmail] = useState(emergencyContact.email); // 👈 新增邮箱状态
+  const [tempEmail, setTempEmail] = useState(emergencyContact.email);
 
   const today = new Date();
   const dateString = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
@@ -35,11 +36,9 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   };
 
   const handleSaveContact = () => {
-    // 👈 增加邮箱校验
     if (!tempName.trim() || tempPhone.length !== 11 || !tempEmail.trim() || !tempEmail.includes('@')) {
       return showAlert("提示", "请填写完整的联系人姓名、11位手机号和有效邮箱。");
     }
-    // 保存真实数据
     setEmergencyContact({
       name: tempName.trim(),
       phone: tempPhone,
@@ -82,8 +81,9 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
       if (reverseGeocode.length > 0) {
         const addr = reverseGeocode[0];
         addressStr = `${addr.city || ''}${addr.district || ''}${addr.street || ''}`;
-        setLocationText(addressStr || '已获取当前位置');
       }
+      // 无论是否解析出详细地址，都更新状态
+      setLocationText(addressStr);
 
       setLoadingLocation(false);
 
@@ -187,11 +187,12 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
           <Text style={styles.accountSubtitle}>尾号 {cardTail} 储蓄卡</Text>
         </View>
 
+        {/* 修改点：更新无障碍标签与卡片文案 */}
         <Pressable 
           style={styles.locationCard} 
           onPress={handleGetLocation}
           accessibilityRole="button"
-          accessibilityLabel="获取我的位置，寻找附近地点"
+          accessibilityLabel="附近安全网点，获取目前定位，寻找警察局或银行，以及语音导航"
           accessibilityState={{ busy: loadingLocation }}
         >
           <View style={styles.locationLeft}>
@@ -199,15 +200,16 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
               <Text style={{ fontSize: 24 }} accessible={false}>📍</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.locationTitle}>我的位置</Text>
-              <Text style={styles.locationDesc} numberOfLines={1}>{loadingLocation ? '正在获取位置...' : locationText}</Text>
+              <Text style={styles.locationTitle}>附近安全网点</Text>
+              <Text style={styles.locationDesc} numberOfLines={1}>
+                {loadingLocation ? '正在获取定位...' : (locationText || '定位，找银行/警局，语音导航')}
+              </Text>
             </View>
           </View>
           <Text style={styles.menuArrow} accessible={false}>›</Text>
         </Pressable>
 
         <View style={styles.contactCard}>
-          {/* 无障碍优化：合并朗读区域，加入邮箱 */}
           <View 
             style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
             accessible={true}
@@ -226,7 +228,7 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
             onPress={() => {
               setTempName(emergencyContact.name);
               setTempPhone(emergencyContact.phone);
-              setTempEmail(emergencyContact.email); // 👈 回显真实邮箱
+              setTempEmail(emergencyContact.email); 
               setEditModalVisible(true);
             }}
             accessibilityRole="button" 
@@ -290,7 +292,6 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
               accessibilityLabel="手机号码输入框，请输入11位数字"
             />
 
-            {/* 👈 新增：电子邮箱输入框 */}
             <Text style={styles.inputLabel}>电子邮箱</Text>
             <TextInput 
               style={styles.modalInput} 
