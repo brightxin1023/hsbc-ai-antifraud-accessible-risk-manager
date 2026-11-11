@@ -31,7 +31,8 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         { 
           text: "📞 一键呼叫人工客服", 
           onPress: () => {
-            // 真实唤起系统拨号盘拨打客服（演示用 95588）
+            // 核心修复：先触发解冻，再唤起系统拨号盘，保证从拨号界面切回时账户已恢复
+            onUnfreeze();
             Linking.openURL('tel:95588').catch(() => {
               showAlert("提示", "您的设备不支持拨号功能。");
             });

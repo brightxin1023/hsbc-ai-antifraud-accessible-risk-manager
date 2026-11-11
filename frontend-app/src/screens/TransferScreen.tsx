@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet, Modal, KeyboardAvoidingView, Platform, Keyboard, ScrollView } from 'react-native';
+import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet, Modal, KeyboardAvoidingView, Platform, Keyboard, ScrollView, Linking } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { detectFraudApi, alertFamilyApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
@@ -44,17 +44,23 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
    * 也能通过震动节奏感知风险高低，形成视觉之外的第二条告警通道。
    */
   const triggerHaptic = (level: 'low' | 'medium' | 'high') => {
-    if (level === 'low') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    } else if (level === 'medium') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-      setTimeout(() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }, 400); 
-    } else if (level === 'high') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
-      setTimeout(() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {}); }, 300);
-      setTimeout(() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {}); }, 600);
-      setTimeout(() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {}); }, 900);
-    }
+    // 延迟 50ms 触发，避免与 Modal 的弹出动画抢夺主线程资源导致震动失效
+    setTimeout(() => {
+      if (level === 'low') {
+        // 低风险：轻震一下
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      } else if (level === 'medium') {
+        // 中风险：震两下
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+        setTimeout(() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }, 300); 
+      } else if (level === 'high') {
+        // 高风险：震两下，然后一串急促震动 (用 Error 模拟)
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+        setTimeout(() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {}); }, 200);
+        setTimeout(() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {}); }, 500);
+        setTimeout(() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {}); }, 800);
+      }
+    }, 50);
   };
 
   useEffect(() => {
@@ -83,17 +89,11 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
           { 
             text: "📞 呼叫人工客服解冻", 
             onPress: () => {
-              showAlert(
-                "📞 正在接通", 
-                "正在为您转接反诈专属人工客服...", 
-                [{ 
-                  text: "OK", 
-                  onPress: () => {
-                    onUnfreeze(); // 解冻由父组件统一管理，避免本页局部状态与全局状态不一致
-                    showAlert("✅ 解冻成功", "人工客服已为您核实身份，账户已恢复正常使用。");
-                  } 
-                }]
-              );
+              // 核心修复：先触发解冻，再唤起系统拨号盘
+              onUnfreeze();
+              Linking.openURL('tel:95588').catch(() => {
+                showAlert("提示", "您的设备不支持拨号功能。");
+              });
             } 
           }
         ]
@@ -128,8 +128,9 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
       if (finalResult.risk_level === 'low' && (!finalResult.scam_type || finalResult.scam_type === '无')) finalResult.scam_type = '低风险';
       
       setResultData(finalResult);
-      triggerHaptic(finalResult.risk_level as 'high' | 'medium' | 'low');
+      // 先弹窗，再触发震动，配合 triggerHaptic 内部的 setTimeout 确保一定能震
       setModalVisible(true);
+      triggerHaptic(finalResult.risk_level as 'high' | 'medium' | 'low');
     } catch (error) {
       showAlert("网络错误", "无法连接到后端服务，请检查网络后重试。");
     } finally {
@@ -172,17 +173,11 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
           { 
             text: "📞 呼叫人工客服申诉解冻", 
             onPress: () => {
-              showAlert(
-                "📞 正在接通", 
-                "正在为您转接反诈专属人工客服...", 
-                [{ 
-                  text: "OK", 
-                  onPress: () => {
-                    onUnfreeze();
-                    showAlert("✅ 解冻成功", "人工客服已为您核实身份，账户已恢复正常使用。请警惕陌生转账！");
-                  } 
-                }]
-              );
+              // 核心修复：先触发解冻，再唤起系统拨号盘
+              onUnfreeze();
+              Linking.openURL('tel:95588').catch(() => {
+                showAlert("提示", "您的设备不支持拨号功能。");
+              });
             } 
           }
         ]
