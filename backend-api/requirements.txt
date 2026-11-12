@@ -6,6 +6,7 @@ pydantic
 mangum
 sqlmodel
 asyncpg
-sqlalchemy
+sqlalchemy[asyncio]
+greenlet
 pytest
 httpx
