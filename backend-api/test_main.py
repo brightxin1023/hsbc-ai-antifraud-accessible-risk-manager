@@ -7,12 +7,19 @@ from database import get_session
 # 模块级复用 TestClient
 client = TestClient(app)
 
+# ==========================================
+# 核心前置配置：Mock 掉数据库依赖
+# ==========================================
+# 把所有的数据库异步操作（execute, commit, refresh）全部 Mock 掉
 mock_session = MagicMock()
 mock_session.execute = AsyncMock()
+mock_session.commit = AsyncMock()
+mock_session.refresh = AsyncMock()
 
 def override_get_session():
     yield mock_session
 
+# 全局注入这个假的数据库 Session
 app.dependency_overrides[get_session] = override_get_session
 
 
@@ -38,6 +45,8 @@ def test_register_route():
     payload = {"phone": "13800000000", "password": "123456"}
     response = client.post("/api/auth/register", json=payload)
     assert response.status_code == 200
+    # 确保 commit 被调用了
+    mock_session.commit.assert_called_once()
 
 def test_login_route():
     """测试登录接口：模拟传入错误账号密码"""
@@ -59,7 +68,7 @@ def test_voice_hint_route():
 
     response = client.get("/api/auth/voice_hint?phone=13800000000")
     assert response.status_code == 200
-    assert response.json()["hint"] == "76__"  # 037674 的后四位 7674 的掩码
+    assert response.json()["hint"] == "76__"
 
 
 # ==========================================
