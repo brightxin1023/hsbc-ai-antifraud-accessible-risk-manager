@@ -29,4 +29,4 @@ jobs:
       env:
         OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }} # 从 GitHub 保险箱读取密钥
       run: |
-        pytest test_main.py
+        pytest -m pytesttest_main.py
