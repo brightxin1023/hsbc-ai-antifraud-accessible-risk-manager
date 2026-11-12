@@ -7,3 +7,5 @@ mangum
 sqlmodel
 asyncpg
 sqlalchemy
+pytest
+httpx
