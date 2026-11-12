@@ -38,8 +38,12 @@ async def login(data: LoginRequest, session: AsyncSession = Depends(get_session)
     result = await session.execute(select(User).where(User.phone == data.phone))
     user = result.scalars().first()
 
-    # 2. 验证密码
-    if not user or user.password != data.password:
+    # 2. 验证用户是否存在（拆分报错，让前端精准识别并引导注册）
+    if not user:
+        raise HTTPException(status_code=404, detail="该手机号未注册")
+
+    # 3. 验证密码
+    if user.password != data.password:
         raise HTTPException(status_code=401, detail="手机号或密码错误")
 
     return {"message": "登录成功", "user_id": user.id}
