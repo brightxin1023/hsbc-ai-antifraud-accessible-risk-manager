@@ -7,7 +7,7 @@ import hashlib
 from database import get_session
 from models import User
 
-router = APIRouter(prefix="/api/auth", tags=["auth"])
+router = APIRouter(tags=["auth"])
 
 # 前端传过来的数据格式
 class RegisterRequest(BaseModel):
