@@ -31,9 +31,9 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         { 
           text: "📞 一键呼叫人工客服", 
           onPress: () => {
-            // 核心修复：先触发解冻，再唤起系统拨号盘，保证从拨号界面切回时账户已恢复
+            // 核心修复：先触发解冻，再唤起系统拨号盘，保证从拨号界面切回时账户已恢复;更新客服电话为汇丰银行服务热线
             onUnfreeze();
-            Linking.openURL('tel:95588').catch(() => {
+            Linking.openURL('tel:95366').catch(() => {
               showAlert("提示", "您的设备不支持拨号功能。");
             });
           } 

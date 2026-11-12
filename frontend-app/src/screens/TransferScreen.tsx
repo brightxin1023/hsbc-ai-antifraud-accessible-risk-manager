@@ -91,7 +91,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             onPress: () => {
               // 核心修复：先触发解冻，再唤起系统拨号盘
               onUnfreeze();
-              Linking.openURL('tel:95588').catch(() => {
+              Linking.openURL('tel:95366').catch(() => {
                 showAlert("提示", "您的设备不支持拨号功能。");
               });
             } 

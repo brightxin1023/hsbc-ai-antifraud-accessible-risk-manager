@@ -158,7 +158,7 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
       { text: "取消", style: "cancel" },
       { text: "📞 立即呼叫", onPress: () => {
         // 真实拨打银行客服电话
-        Linking.openURL('tel:95588').catch(() => {
+        Linking.openURL('tel:95366').catch(() => {
           showAlert("提示", "您的设备不支持拨号功能。");
         });
       }}
