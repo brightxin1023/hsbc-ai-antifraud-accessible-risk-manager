@@ -54,7 +54,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
         setPhone('17627882752'); 
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
         showAlert("✅ 识别成功", "已为您自动填入手机号：17627882752");
-      }, 10000);
+      }, 5000);
     }
     return () => {
       clearTimeout(timer);
