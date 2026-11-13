@@ -74,7 +74,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (phone: string) => v
       recorder.record();
       
       setIsPhoneRecording(true);
-      setPhoneCountdown(10);
+      setPhoneCountdown(5);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
     } catch (err) {
       showAlert("❌ 错误", "麦克风启动失败");
