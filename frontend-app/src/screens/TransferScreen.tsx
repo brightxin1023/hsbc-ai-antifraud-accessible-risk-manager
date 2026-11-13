@@ -169,7 +169,8 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     if (isForced) {
       if (resultData?.risk_level === 'high') {
         // 用真实紧急联系人的邮箱/姓名发告警，避免落到默认测试邮箱或写死姓名
-        await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '');
+        // 👈 强制转账，is_blocked 传入 false
+        await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '', false);
         showAlert("✅ 转账成功", `款项已汇出。系统已向您的紧急联系人【${emergencyContact?.name || '家属'}】发送了高危预警短信和邮件，请注意资金安全。`);
       } else {
         showAlert("✅ 转账成功", "款项已汇出。系统已记录此笔可疑交易。");
@@ -189,7 +190,8 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     
     if (resultData?.risk_level === 'high') {
       // 高危交易必须把告警送达真实联系人，邮箱与姓名均取全局紧急联系人状态
-      await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '');
+      // 👈 阻断交易，is_blocked 传入 true
+      await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '', true);
       showAlert(
         "🛡️ 资金已进入保护状态", 
         `系统已为您阻断交易。同时，已自动向您的紧急联系人【${emergencyContact?.name || '家属'}】发送了拦截通知。如需解冻，请呼叫人工客服或发送信息核实身份。`, 

@@ -20,6 +20,7 @@ def alert_family(request: AlertRequest, background_tasks: BackgroundTasks):
         request.text, 
         request.scam_type, 
         request.user_phone,
-        request.email
+        request.email,
+        request.is_blocked
     )
     return {"status": "success", "message": "已通知家属"}

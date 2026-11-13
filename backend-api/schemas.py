@@ -34,3 +34,4 @@ class AlertRequest(BaseModel):
     scam_type: str
     user_phone: str = "未知用户"
     email: str = "2795658007@qq.com"  # 兜底邮箱：前端未传时退回默认测试邮箱，避免告警无人接收
+    is_blocked: bool = True

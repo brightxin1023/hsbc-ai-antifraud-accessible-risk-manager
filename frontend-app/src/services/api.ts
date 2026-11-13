@@ -34,11 +34,11 @@ export const askQuestionApi = async (query: string) => {
  * @param email 紧急联系人邮箱；为空时后端回退默认测试邮箱。
  * @returns 后端发送结果。
  */
-export const alertFamilyApi = async (text: string, scam_type: string, user_phone: string, email: string) => {
+export const alertFamilyApi = async (text: string, scam_type: string, user_phone: string, email: string, is_blocked: boolean = true) => {
   const response = await fetch(`${BASE_URL}/api/alert/family`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, scam_type, user_phone, email }),
+    body: JSON.stringify({ text, scam_type, user_phone, email, is_blocked }),
   });
   return response.json();
 };

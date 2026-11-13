@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 from email.utils import formataddr
 
-def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知用户", receiver_email: str = None):
+def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知用户", receiver_email: str = None, is_blocked: bool = True):
     """按诈骗类型组装告警邮件并发送；缺配置时静默跳过，不抛异常。
 
     参数:
@@ -13,6 +13,7 @@ def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知�
         scam_type: 诈骗类型；值为“紧急求助”时走求助模板，否则走高危拦截模板。
         user_phone: 用户手机号，用于脱敏展示。
         receiver_email: 家属邮箱；为空时回退到默认测试邮箱。
+        is_blocked: 交易是否被成功阻断，影响邮件文案。
     """
     sender = os.getenv("MAIL_SENDER")
     auth_code = os.getenv("MAIL_AUTH_CODE")
@@ -37,8 +38,15 @@ def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知�
 请立即致电家人，确认其人身及财产安全！
 （此为系统自动发送，请勿回复）"""
     else:
-        subject = "【高危拦截】您的家人可能正在遭遇诈骗"
-        body = f"""【AI反诈盾 - 高危交易拦截预警】
+        # 核心修复：根据 is_blocked 动态生成标题和动作提示
+        if is_blocked:
+            subject = "【高危拦截】您的家人可能正在遭遇诈骗"
+            action_text = "系统已自动阻断该交易。请立即联系家人，提醒其切勿上当受骗！"
+        else:
+            subject = "【高危转账】您的家人可能已向骗子转账"
+            action_text = "尽管系统发出强力警告，该笔交易已被强制汇出。请立即联系家人，确认其安全并报警！"
+
+        body = f"""【AI反诈盾 - 高危交易预警】
 
 您好：
 您的家人（账号尾号：{masked_phone[-4:]}）正在发起一笔转账。
@@ -47,7 +55,7 @@ def send_alert_email(user_text: str, scam_type: str, user_phone: str = "未知�
 【转账附言】：
 {user_text if user_text else '无附言'}
 
-系统已自动阻断该交易。请立即联系家人，提醒其切勿上当受骗！"""
+{action_text}"""
 
     message = MIMEText(body, 'plain', 'utf-8')
     # formataddr 必须接收元组 (显示名, 地址)；外层括号不可少，否则会被解包成两个实参
