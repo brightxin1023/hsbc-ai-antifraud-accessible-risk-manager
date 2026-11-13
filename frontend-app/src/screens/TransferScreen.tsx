@@ -84,9 +84,10 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
       return showAlert("提示", "请输入您要发送的内容。");
     }
     setMessageModalVisible(false);
-    showAlert("✅ 发送成功", "人工客服已收到您的申诉信息，将尽快为您核实处理。账户已解除冻结。", [
-      { text: "好的", onPress: () => onUnfreeze() }
-    ]);
+    onUnfreeze(); // 直接解冻
+    setTimeout(() => {
+      showAlert("✅ 发送成功", "人工客服已收到您的申诉信息，账户已解除冻结。");
+    }, 200);
   };
 
   const checkFraud = async () => {
@@ -114,7 +115,10 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             text: "✉️ 发送信息",
             onPress: () => {
               setMessageText('');
-              setMessageModalVisible(true);
+              setAlertConfig((prev: any) => ({ ...prev, visible: false }));
+              setTimeout(() => {
+                setMessageModalVisible(true);
+              }, 200);
             }
           }
         ]
@@ -205,7 +209,10 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             text: "✉️ 发送信息",
             onPress: () => {
               setMessageText('');
-              setMessageModalVisible(true);
+              setAlertConfig((prev: any) => ({ ...prev, visible: false }));
+              setTimeout(() => {
+                setMessageModalVisible(true);
+              }, 200);
             }
           }
         ]

@@ -55,10 +55,10 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       return showAlert("提示", "请输入您要发送的内容。");
     }
     setMessageModalVisible(false);
-    // Mock 提交成功，自动解冻
-    showAlert("✅ 发送成功", "人工客服已收到您的申诉信息，将尽快为您核实处理。账户已解除冻结。", [
-      { text: "好的", onPress: () => onUnfreeze() }
-    ]);
+    onUnfreeze(); // 直接解冻
+    setTimeout(() => {
+      showAlert("✅ 发送成功", "人工客服已收到您的申诉信息，账户已解除冻结。");
+    }, 200);
   };
 
   const handleCallFamily = () => {
@@ -101,11 +101,11 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
             <Text style={styles.frozenBannerText}>
               检测到高危风险，资金已自动拦截。保护期间，您的工资入账及日常水电费自动扣款均不受影响。如需解冻，可呼叫客服或发送信息核实身份。
             </Text>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <Pressable style={[styles.appealBtn, { backgroundColor: '#D32F2F', flex: 1 }]} onPress={handleAppealCall} accessibilityRole="button" accessibilityLabel="呼叫人工客服申诉解冻">
+            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 15 }}>
+              <Pressable style={[styles.appealBtn, { backgroundColor: '#D32F2F', flex: 1, justifyContent: 'center' }]} onPress={handleAppealCall} accessibilityRole="button" accessibilityLabel="呼叫人工客服申诉解冻">
                 <Text style={styles.appealBtnText}>📞 呼叫客服</Text>
               </Pressable>
-              <Pressable style={[styles.appealBtn, { backgroundColor: '#1565C0', flex: 1 }]} onPress={handleAppealMessage} accessibilityRole="button" accessibilityLabel="发送文字信息给客服申诉解冻">
+              <Pressable style={[styles.appealBtn, { backgroundColor: '#1565C0', flex: 1, justifyContent: 'center' }]} onPress={handleAppealMessage} accessibilityRole="button" accessibilityLabel="发送文字信息给客服申诉解冻">
                 <Text style={styles.appealBtnText}>✉️ 发送信息</Text>
               </Pressable>
             </View>

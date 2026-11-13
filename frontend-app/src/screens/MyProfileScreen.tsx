@@ -209,7 +209,10 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
       return showAlert("提示", "请输入您要发送的内容。");
     }
     setMessageModalVisible(false);
-    showAlert("✅ 发送成功", "人工客服已收到您的信息，将尽快回复您。");
+    // 关键修复：延迟 500ms 确保输入框 Modal 的关闭动画彻底结束，避免 CustomAlert 被底层吞噬导致无法弹出
+    setTimeout(() => {
+      showAlert("✅ 发送成功", "人工客服已收到您的信息，将在 1 个工作日内回复您。");
+    }, 500);
   };
 
   const confirmLogout = () => {
@@ -311,12 +314,12 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
           </Pressable>
         </View>
 
-        {/* 双按钮：呼叫与发信息 */}
+        {/* 双按钮：呼叫与发信息 (修复 UI 对齐) */}
         <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
-          <Pressable style={[styles.sosBtn, { backgroundColor: '#FFA000', flex: 1 }]} onPress={handleSOSCall} accessibilityRole="button" accessibilityLabel="呼叫人工客服">
+          <Pressable style={[styles.sosBtn, { backgroundColor: '#FFA000', flex: 1, marginBottom: 0, justifyContent: 'center' }]} onPress={handleSOSCall} accessibilityRole="button" accessibilityLabel="呼叫人工客服">
             <Text style={styles.sosBtnText}>📞 呼叫客服</Text>
           </Pressable>
-          <Pressable style={[styles.sosBtn, { backgroundColor: '#1565C0', flex: 1, marginBottom: 0 }]} onPress={handleSOSMessage} accessibilityRole="button" accessibilityLabel="发送信息给人工客服">
+          <Pressable style={[styles.sosBtn, { backgroundColor: '#1565C0', flex: 1, marginBottom: 0, justifyContent: 'center' }]} onPress={handleSOSMessage} accessibilityRole="button" accessibilityLabel="发送信息给人工客服">
             <Text style={[styles.sosBtnText, { color: 'white' }]}>✉️ 发送信息</Text>
           </Pressable>
         </View>
@@ -472,7 +475,7 @@ const styles = StyleSheet.create({
   menuIconLarge: { fontSize: 28, marginBottom: 8 },
   menuText: { fontSize: 18, color: '#333', fontWeight: '500' },
   menuArrow: { fontSize: 24, color: '#666666' }, 
-  sosBtn: { padding: 20, borderRadius: 16, alignItems: 'center', marginBottom: 16, minHeight: 64, elevation: 2 },
+  sosBtn: { padding: 20, borderRadius: 16, alignItems: 'center', justifyContent: 'center', minHeight: 64, elevation: 2 },
   sosBtnText: { color: '#1A1A1A', fontSize: 22, fontWeight: 'bold' }, 
   logoutBtn: { backgroundColor: '#D32F2F', padding: 20, borderRadius: 16, alignItems: 'center', minHeight: 64, elevation: 2 },
   logoutBtnText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
