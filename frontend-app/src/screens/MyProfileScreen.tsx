@@ -203,11 +203,11 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   };
 
   const showAbout = () => {
-    showAlert("关于数字无碍·智能反诈管家", "当前版本：v1.0.0\n本产品由 HSBC 黑客松团队研发，致力于为残障与老年群体提供无障碍的智能金融反诈保护。");
+    showAlert("ℹ️ 关于数字无碍·智能反诈管家", "当前版本：v1.0.0\n本产品由 HSBC 黑客松团队研发，致力于为残障与老年群体提供无障碍的智能金融反诈保护。");
   };
 
   const showPrivacy = () => {
-    showAlert("隐私与协议", "我们严格遵循相关隐私法律法规，所有的资金风控与大模型分析均在本地加密链路中进行，绝不泄露您的个人隐私。");
+    showAlert("🔒 隐私与协议", "我们严格遵循相关隐私法律法规，所有的资金风控与大模型分析均在本地加密链路中进行，绝不泄露您的个人隐私。");
   };
 
   return (
