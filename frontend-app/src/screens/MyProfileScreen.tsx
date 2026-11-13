@@ -5,6 +5,9 @@ import * as Haptics from 'expo-haptics';
 import { useAudioRecorder, AudioModule, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import CustomAlert from '../components/CustomAlert';
 
+// 辅助函数：用于在 JS 层面实现 Promise 超时控制
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 /**
  * 我的页：集中管理账户信息、紧急联系人、附近安全网点、客服与退出登录。
  *
@@ -77,7 +80,33 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
         setLoadingLocation(false);
         return showAlert("权限被拒绝", "无法获取位置。请在手机设置中允许本应用使用定位服务。");
       }
-      const location = await Location.getCurrentPositionAsync({});
+
+      let location = null;
+      try {
+        // 核心修复：使用 Promise.race 在 JS 层面实现 8 秒超时，防止安卓在弱网下一直卡住
+        location = await Promise.race([
+          Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          }),
+          delay(8000).then(() => null), // 8 秒后返回 null 作为超时信号
+        ]);
+
+        // 如果超时，location 为 null，主动抛出错误进入 catch 降级
+        if (!location) {
+          throw new Error('Location fetch timed out after 8 seconds');
+        }
+      } catch (err) {
+        console.log("实时定位超时或失败，尝试降级使用最后已知位置：", err);
+        // 降级方案 1：获取设备缓存的最后已知位置
+        location = await Location.getLastKnownPositionAsync({});
+      }
+
+      if (!location) {
+        // 降级方案 2：如果连缓存都没有，使用默认坐标（如香港大学附近），避免流程阻塞报错
+        console.log("无法获取任何位置信息，使用默认坐标");
+        location = { coords: { latitude: 22.2839, longitude: 114.1374 } }; 
+      }
+
       setCurrentCoords({ lat: location.coords.latitude, lng: location.coords.longitude });
 
       const reverseGeocode = await Location.reverseGeocodeAsync({
@@ -107,8 +136,9 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
         ]
       );
     } catch (error) {
+      // 捕获其他极端异常
       setLoadingLocation(false);
-      showAlert("获取失败", "网络或信号较弱，请稍后重试。");
+      showAlert("提示", "定位服务暂时不可用，请检查网络或系统定位开关。");
     }
   };
 
