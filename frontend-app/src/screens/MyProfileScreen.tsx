@@ -39,6 +39,7 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   // 客服信息发送 Modal 状态
   const [messageModalVisible, setMessageModalVisible] = useState(false);
   const [messageText, setMessageText] = useState('');
+  const [msgError, setMsgError] = useState(''); // 👈 新增错误提示状态
 
   const today = new Date();
   const dateString = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
@@ -201,13 +202,16 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
 
   const handleSOSMessage = () => {
     setMessageText('');
+    setMsgError(''); // 👈 打开时清空错误
     setMessageModalVisible(true);
   };
 
   const submitSOSMessage = () => {
     if (!messageText.trim()) {
-      return showAlert("提示", "请输入您要发送的内容。");
+      // 👈 不再弹新窗，直接显示红字
+      return setMsgError("请输入您要发送的内容。");
     }
+    setMsgError('');
     setMessageModalVisible(false);
     // 关键修复：延迟 500ms 确保输入框 Modal 的关闭动画彻底结束，避免 CustomAlert 被底层吞噬导致无法弹出
     setTimeout(() => {
@@ -415,17 +419,18 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
         <KeyboardAvoidingView style={styles.msgModalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} accessibilityViewIsModal={true}>
           <View style={styles.msgModalContent}>
             <Text style={styles.msgModalTitle} accessibilityRole="header">✉️ 发送信息给人工客服</Text>
-            <Text style={styles.msgModalSubtitle}>请描述您的问题或需要协助的事项，人工客服将尽快处理。</Text>
+            <Text style={styles.msgModalSubtitle}>请描述您的问题或需要协助的事项，客服将尽快处理。</Text>
             <TextInput
-              style={styles.msgModalInput}
+              style={[styles.msgModalInput, msgError ? { borderColor: '#D32F2F' } : {}]} // 👈 错误时边框变红
               multiline
               numberOfLines={4}
               placeholder="请输入您想对客服说的话..."
               placeholderTextColor="#767676"
               value={messageText}
-              onChangeText={setMessageText}
+              onChangeText={(text) => { setMessageText(text); setMsgError(''); }} // 👈 输入时清空错误
               accessibilityLabel="客服信息输入框"
             />
+            {msgError ? <Text style={{ color: '#D32F2F', fontSize: 16, marginBottom: 10, alignSelf: 'flex-start' }}>{msgError}</Text> : null}
             <View style={styles.msgModalButtons}>
               <Pressable style={styles.msgCancelBtn} onPress={() => setMessageModalVisible(false)} accessibilityRole="button" accessibilityLabel="取消发送">
                 <Text style={styles.msgCancelBtnText}>取消</Text>

@@ -26,6 +26,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
   const [messageModalVisible, setMessageModalVisible] = useState(false);
   const [messageText, setMessageText] = useState('');
+  const [msgError, setMsgError] = useState(''); // 👈 新增错误提示状态
   
   const scrollViewRef = useRef<any>(null);
 
@@ -81,13 +82,15 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
   // 提交文本申诉
   const submitAppealMessage = () => {
     if (!messageText.trim()) {
-      return showAlert("提示", "请输入您要发送的内容。");
+      // 👈 不再弹新窗，直接显示红字
+      return setMsgError("请输入您要发送的内容。");
     }
+    setMsgError('');
     setMessageModalVisible(false);
     onUnfreeze(); // 直接解冻
     setTimeout(() => {
       showAlert("✅ 发送成功", "人工客服已收到您的申诉信息，账户已解除冻结。");
-    }, 200);
+    }, 500);
   };
 
   const checkFraud = async () => {
@@ -115,6 +118,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             text: "✉️ 发送信息",
             onPress: () => {
               setMessageText('');
+              setMsgError(''); // 👈 打开时清空
               setAlertConfig((prev: any) => ({ ...prev, visible: false }));
               setTimeout(() => {
                 setMessageModalVisible(true);
@@ -169,7 +173,6 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     if (isForced) {
       if (resultData?.risk_level === 'high') {
         // 用真实紧急联系人的邮箱/姓名发告警，避免落到默认测试邮箱或写死姓名
-        // 👈 强制转账，is_blocked 传入 false
         await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '', false);
         showAlert("✅ 转账成功", `款项已汇出。系统已向您的紧急联系人【${emergencyContact?.name || '家属'}】发送了高危预警短信和邮件，请注意资金安全。`);
       } else {
@@ -190,7 +193,6 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     
     if (resultData?.risk_level === 'high') {
       // 高危交易必须把告警送达真实联系人，邮箱与姓名均取全局紧急联系人状态
-      // 👈 阻断交易，is_blocked 传入 true
       await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '', true);
       showAlert(
         "🛡️ 资金已进入保护状态", 
@@ -211,6 +213,7 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             text: "✉️ 发送信息",
             onPress: () => {
               setMessageText('');
+              setMsgError(''); // 👈 打开时清空
               setAlertConfig((prev: any) => ({ ...prev, visible: false }));
               setTimeout(() => {
                 setMessageModalVisible(true);
@@ -363,15 +366,16 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
             <Text style={styles.msgModalTitle} accessibilityRole="header">✉️ 发送信息给人工客服</Text>
             <Text style={styles.msgModalSubtitle}>请描述您的问题或申诉理由，人工客服将尽快处理。</Text>
             <TextInput
-              style={styles.msgModalInput}
+              style={[styles.msgModalInput, msgError ? { borderColor: '#D32F2F' } : {}]} // 👈 错误时边框变红
               multiline
               numberOfLines={4}
               placeholder="请输入您的申诉信息..."
               placeholderTextColor="#767676"
               value={messageText}
-              onChangeText={setMessageText}
+              onChangeText={(text) => { setMessageText(text); setMsgError(''); }} // 👈 输入时清空错误
               accessibilityLabel="申诉信息输入框"
             />
+            {msgError ? <Text style={{ color: '#D32F2F', fontSize: 16, marginBottom: 10, alignSelf: 'flex-start' }}>{msgError}</Text> : null}
             <View style={styles.msgModalButtons}>
               <Pressable style={styles.msgCancelBtn} onPress={() => setMessageModalVisible(false)} accessibilityRole="button" accessibilityLabel="取消发送">
                 <Text style={styles.msgCancelBtnText}>取消</Text>

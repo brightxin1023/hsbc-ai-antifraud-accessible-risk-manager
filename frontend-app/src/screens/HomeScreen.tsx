@@ -20,6 +20,7 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
   const [messageModalVisible, setMessageModalVisible] = useState(false);
   const [messageText, setMessageText] = useState('');
+  const [msgError, setMsgError] = useState(''); // 👈 新增错误提示状态
 
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: 'OK' }]) => {
     setAlertConfig({ visible: true, title, message, buttons });
@@ -47,18 +48,21 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
 
   const handleAppealMessage = () => {
     setMessageText('');
+    setMsgError(''); // 👈 打开时清空错误
     setMessageModalVisible(true);
   };
 
   const submitAppealMessage = () => {
     if (!messageText.trim()) {
-      return showAlert("提示", "请输入您要发送的内容。");
+      // 👈 不再弹新窗，直接显示红字
+      return setMsgError("请输入您要发送的内容。");
     }
+    setMsgError('');
     setMessageModalVisible(false);
     onUnfreeze(); // 直接解冻
     setTimeout(() => {
       showAlert("✅ 发送成功", "人工客服已收到您的申诉信息，账户已解除冻结。");
-    }, 200);
+    }, 500);
   };
 
   const handleCallFamily = () => {
@@ -192,17 +196,18 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} accessibilityViewIsModal={true}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle} accessibilityRole="header">✉️ 发送信息给人工客服</Text>
-            <Text style={styles.modalSubtitle}>请描述您的问题或申诉理由，人工客服将尽快处理。</Text>
+            <Text style={styles.modalSubtitle}>请描述您的问题或申诉理由，客服将尽快处理。</Text>
             <TextInput
-              style={styles.modalInput}
+              style={[styles.modalInput, msgError ? { borderColor: '#D32F2F' } : {}]} // 👈 错误时边框变红
               multiline
               numberOfLines={4}
               placeholder="请输入您的申诉信息..."
               placeholderTextColor="#767676"
               value={messageText}
-              onChangeText={setMessageText}
+              onChangeText={(text) => { setMessageText(text); setMsgError(''); }} // 👈 输入时清空错误
               accessibilityLabel="申诉信息输入框"
             />
+            {msgError ? <Text style={{ color: '#D32F2F', fontSize: 16, marginBottom: 10, alignSelf: 'flex-start' }}>{msgError}</Text> : null}
             <View style={styles.modalButtons}>
               <Pressable style={styles.cancelBtn} onPress={() => setMessageModalVisible(false)} accessibilityRole="button" accessibilityLabel="取消发送">
                 <Text style={styles.cancelBtnText}>取消</Text>
