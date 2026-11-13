@@ -191,8 +191,8 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
       <Modal visible={messageModalVisible} transparent={true} animationType="fade">
         <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} accessibilityViewIsModal={true}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle} accessibilityRole="header">✉️ 发送信息给客服</Text>
-            <Text style={styles.modalSubtitle}>请描述您的问题或申诉理由，客服将尽快处理。</Text>
+            <Text style={styles.modalTitle} accessibilityRole="header">✉️ 发送信息给人工客服</Text>
+            <Text style={styles.modalSubtitle}>请描述您的问题或申诉理由，人工客服将尽快处理。</Text>
             <TextInput
               style={styles.modalInput}
               multiline

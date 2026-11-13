@@ -414,8 +414,8 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
       <Modal visible={messageModalVisible} transparent={true} animationType="fade">
         <KeyboardAvoidingView style={styles.msgModalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} accessibilityViewIsModal={true}>
           <View style={styles.msgModalContent}>
-            <Text style={styles.msgModalTitle} accessibilityRole="header">✉️ 发送信息给客服</Text>
-            <Text style={styles.msgModalSubtitle}>请描述您的问题或需要协助的事项，客服将尽快处理。</Text>
+            <Text style={styles.msgModalTitle} accessibilityRole="header">✉️ 发送信息给人工客服</Text>
+            <Text style={styles.msgModalSubtitle}>请描述您的问题或需要协助的事项，人工客服将尽快处理。</Text>
             <TextInput
               style={styles.msgModalInput}
               multiline
