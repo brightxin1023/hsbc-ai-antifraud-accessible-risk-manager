@@ -52,12 +52,13 @@
 
 - **前端 (Frontend)**：React Native (Expo) + TypeScript。自研 `CustomAlert` 组件解决原生弹窗残影；联动 `KeyboardAvoidingView` 解决键盘遮挡。
 - **后端 (Backend)**：Python 3.11 + FastAPI + Pydantic。
+- **数据库 (Database)**：通过 Vercel 集成托管的 **Neon Serverless PostgreSQL**。结合 `SQLAlchemy` 异步 ORM 与 `asyncpg` 驱动，实现云端鉴权数据的高可用持久化。
 - **AI 与 RAG**：DeepSeek API + 本地涉诈剧本知识库匹配（`scams.json`）。
 - **云架构设计**：规划基于 AWS Serverless (API Gateway + Lambda + DynamoDB) 进行未来云端部署。
 
 ### 🧪 自动化测试与 CI/CD 流水线
 本项目具备大厂级工程规范，已接入 GitHub Actions 与 Vercel 自动化流水线：
-- **CI (持续集成)**：基于 `pytest` 编写了 `test_main.py`，覆盖鉴权、检测、问答等核心 API。使用 `AsyncMock` 与 `dependency_overrides` 完全隔离外部数据库和 AI 依赖，实现 100% 离线、零成本、毫秒级的确定性验证。
+- **CI (持续集成)**：基于 `pytest` 编写了 `test_main.py`，覆盖鉴权、检测、问答等核心 API。使用 `AsyncMock` 与 `dependency_overrides` 完全隔离外部数据库和 AI 依赖；并在本地测试环境使用 `aiosqlite` 作为内存数据库降级方案，实现 100% 离线、零成本、毫秒级的确定性验证。
 - **CD (持续部署)**：深度绑定 Vercel。每次代码 push 且通过 GitHub Actions 测试后，自动触发生产环境构建（Build），无缝打包至 Serverless 边缘节点。实现零停机、全自动化发布，并保留历史版本记录支持一键回滚 (Rollback)。
 
 ## 🚀 快速开始 (Getting Started)
