@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable, StyleSheet, Linking } from 'react-native';
+import { ScrollView, View, Text, Pressable, StyleSheet, Linking, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { alertFamilyApi } from '../services/api';
 import CustomAlert from '../components/CustomAlert';
 
@@ -18,11 +18,14 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
   const maskedContactPhone = emergencyContact.phone.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
 
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
+  const [messageModalVisible, setMessageModalVisible] = useState(false);
+  const [messageText, setMessageText] = useState('');
+
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: 'OK' }]) => {
     setAlertConfig({ visible: true, title, message, buttons });
   };
 
-  const handleAppeal = () => {
+  const handleAppealCall = () => {
     showAlert(
       "🛡️ 解除冻结（申诉）", 
       "为了保护您的资金安全，当前账户已限制出账。如需解冻，请呼叫人工客服核实身份。",
@@ -40,6 +43,22 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         }
       ]
     );
+  };
+
+  const handleAppealMessage = () => {
+    setMessageText('');
+    setMessageModalVisible(true);
+  };
+
+  const submitAppealMessage = () => {
+    if (!messageText.trim()) {
+      return showAlert("提示", "请输入您要发送的内容。");
+    }
+    setMessageModalVisible(false);
+    // Mock 提交成功，自动解冻
+    showAlert("✅ 发送成功", "人工客服已收到您的申诉信息，将尽快为您核实处理。账户已解除冻结。", [
+      { text: "好的", onPress: () => onUnfreeze() }
+    ]);
   };
 
   const handleCallFamily = () => {
@@ -80,11 +99,16 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
               <Text style={styles.frozenBannerTitle}>账户已进入安全保护状态</Text>
             </View>
             <Text style={styles.frozenBannerText}>
-              检测到高危风险，资金已自动拦截。保护期间，您的工资入账及日常水电费自动扣款均不受影响。
+              检测到高危风险，资金已自动拦截。保护期间，您的工资入账及日常水电费自动扣款均不受影响。如需解冻，可呼叫客服或发送信息核实身份。
             </Text>
-            <Pressable style={styles.appealBtn} onPress={handleAppeal} accessibilityRole="button" accessibilityLabel="呼叫人工客服申诉解冻">
-              <Text style={styles.appealBtnText}>📞 呼叫人工客服申诉解冻</Text>
-            </Pressable>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <Pressable style={[styles.appealBtn, { backgroundColor: '#D32F2F', flex: 1 }]} onPress={handleAppealCall} accessibilityRole="button" accessibilityLabel="呼叫人工客服申诉解冻">
+                <Text style={styles.appealBtnText}>📞 呼叫客服</Text>
+              </Pressable>
+              <Pressable style={[styles.appealBtn, { backgroundColor: '#1565C0', flex: 1 }]} onPress={handleAppealMessage} accessibilityRole="button" accessibilityLabel="发送文字信息给客服申诉解冻">
+                <Text style={styles.appealBtnText}>✉️ 发送信息</Text>
+              </Pressable>
+            </View>
           </View>
         )}
 
@@ -163,6 +187,34 @@ export default function HomeScreen({ isFrozen, userPhone, onLogout, transactions
         </Pressable>
       </ScrollView>
 
+      {/* 客服发信 Modal */}
+      <Modal visible={messageModalVisible} transparent={true} animationType="fade">
+        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} accessibilityViewIsModal={true}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle} accessibilityRole="header">✉️ 发送信息给客服</Text>
+            <Text style={styles.modalSubtitle}>请描述您的问题或申诉理由，客服将尽快处理。</Text>
+            <TextInput
+              style={styles.modalInput}
+              multiline
+              numberOfLines={4}
+              placeholder="请输入您的申诉信息..."
+              placeholderTextColor="#767676"
+              value={messageText}
+              onChangeText={setMessageText}
+              accessibilityLabel="申诉信息输入框"
+            />
+            <View style={styles.modalButtons}>
+              <Pressable style={styles.cancelBtn} onPress={() => setMessageModalVisible(false)} accessibilityRole="button" accessibilityLabel="取消发送">
+                <Text style={styles.cancelBtnText}>取消</Text>
+              </Pressable>
+              <Pressable style={styles.saveBtn} onPress={submitAppealMessage} accessibilityRole="button" accessibilityLabel="确认发送">
+                <Text style={styles.saveBtnText}>发送</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
       <CustomAlert visible={alertConfig.visible} title={alertConfig.title} message={alertConfig.message} buttons={alertConfig.buttons} onClose={() => setAlertConfig({ ...alertConfig, visible: false })} />
     </View>
   );
@@ -173,7 +225,7 @@ const styles = StyleSheet.create({
   frozenBanner: { backgroundColor: '#FFEBEE', padding: 20, borderRadius: 12, borderWidth: 2, borderColor: '#D32F2F', marginBottom: 20 },
   frozenBannerTitle: { color: '#D32F2F', fontSize: 22, fontWeight: 'bold' },
   frozenBannerText: { color: '#B71C1C', fontSize: 16, lineHeight: 24, marginBottom: 15 },
-  appealBtn: { backgroundColor: '#D32F2F', padding: 16, borderRadius: 8, alignItems: 'center' },
+  appealBtn: { padding: 16, borderRadius: 8, alignItems: 'center' },
   appealBtnText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
   headerCard: { backgroundColor: '#2E7D32', padding: 24, borderRadius: 16, marginBottom: 20, elevation: 4 },
   headerTitle: { color: 'white', fontSize: 26, fontWeight: 'bold', marginBottom: 6 },
@@ -208,4 +260,15 @@ const styles = StyleSheet.create({
   badgeLowRiskText: { fontSize: 14, color: '#2E7D32', fontWeight: 'bold' },
   viewAllBtn: { backgroundColor: '#1565C0', padding: 18, borderRadius: 12, alignItems: 'center', marginBottom: 20, minHeight: 60 },
   viewAllBtnText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
+  // Modal Styles
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { backgroundColor: 'white', width: '90%', borderRadius: 20, padding: 24, elevation: 10 },
+  modalTitle: { fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 8, textAlign: 'center' },
+  modalSubtitle: { fontSize: 16, color: '#666', marginBottom: 20, textAlign: 'center' },
+  modalInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 14, fontSize: 18, marginBottom: 20, backgroundColor: '#fafafa', minHeight: 120, textAlignVertical: 'top' },
+  modalButtons: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+  cancelBtn: { flex: 1, backgroundColor: '#eee', padding: 16, borderRadius: 10, alignItems: 'center' },
+  cancelBtnText: { fontSize: 18, color: '#666', fontWeight: 'bold' },
+  saveBtn: { flex: 1, backgroundColor: '#1565C0', padding: 16, borderRadius: 10, alignItems: 'center' },
+  saveBtnText: { fontSize: 18, color: 'white', fontWeight: 'bold' },
 });

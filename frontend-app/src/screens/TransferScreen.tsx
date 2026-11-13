@@ -24,6 +24,9 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
   const [resultData, setResultData] = useState<any>(null);
 
   const [alertConfig, setAlertConfig] = useState<any>({ visible: false });
+  const [messageModalVisible, setMessageModalVisible] = useState(false);
+  const [messageText, setMessageText] = useState('');
+  
   const scrollViewRef = useRef<any>(null);
 
   const showAlert = (title: string, message: string, buttons: any[] = [{ text: '知道了' }]) => {
@@ -75,6 +78,17 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
     }
   }, [cardNo]);
 
+  // 提交文本申诉
+  const submitAppealMessage = () => {
+    if (!messageText.trim()) {
+      return showAlert("提示", "请输入您要发送的内容。");
+    }
+    setMessageModalVisible(false);
+    showAlert("✅ 发送成功", "人工客服已收到您的申诉信息，将尽快为您核实处理。账户已解除冻结。", [
+      { text: "好的", onPress: () => onUnfreeze() }
+    ]);
+  };
+
   const checkFraud = async () => {
     Keyboard.dismiss();
     
@@ -83,11 +97,11 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       return showAlert(
         "🛡️ 账户已被保护性冻结", 
-        "检测到您的账户存在高危风险，出账功能已暂停。为保障资金安全，如需继续转账，请先呼叫人工客服核实身份并解除冻结。", 
+        "检测到您的账户存在高危风险，出账功能已暂停。为保障资金安全，如需继续转账，请先呼叫人工客服或发送信息核实身份并解除冻结。", 
         [
           { text: "稍后处理", style: "cancel" },
           { 
-            text: "📞 呼叫人工客服解冻", 
+            text: "📞 呼叫客服", 
             onPress: () => {
               // 核心修复：先触发解冻，再唤起系统拨号盘
               onUnfreeze();
@@ -95,6 +109,13 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
                 showAlert("提示", "您的设备不支持拨号功能。");
               });
             } 
+          },
+          {
+            text: "✉️ 发送信息",
+            onPress: () => {
+              setMessageText('');
+              setMessageModalVisible(true);
+            }
           }
         ]
       );
@@ -167,11 +188,11 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
       await alertFamilyApi(note || '无附言', resultData.scam_type, userPhone, emergencyContact?.email || '');
       showAlert(
         "🛡️ 资金已进入保护状态", 
-        `系统已为您阻断交易。同时，已自动向您的紧急联系人【${emergencyContact?.name || '家属'}】发送了拦截通知。如需解冻，请呼叫人工客服核实身份。`, 
+        `系统已为您阻断交易。同时，已自动向您的紧急联系人【${emergencyContact?.name || '家属'}】发送了拦截通知。如需解冻，请呼叫人工客服或发送信息核实身份。`, 
         [
           { text: "稍后处理", style: "cancel" },
           { 
-            text: "📞 呼叫人工客服申诉解冻", 
+            text: "📞 呼叫客服", 
             onPress: () => {
               // 核心修复：先触发解冻，再唤起系统拨号盘
               onUnfreeze();
@@ -179,6 +200,13 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
                 showAlert("提示", "您的设备不支持拨号功能。");
               });
             } 
+          },
+          {
+            text: "✉️ 发送信息",
+            onPress: () => {
+              setMessageText('');
+              setMessageModalVisible(true);
+            }
           }
         ]
       );
@@ -319,6 +347,34 @@ export default function TransferScreen({ onFreeze, onUnfreeze, addTransaction, u
         </View>
       </Modal>
 
+      {/* 客服发信 Modal */}
+      <Modal visible={messageModalVisible} transparent={true} animationType="fade">
+        <KeyboardAvoidingView style={styles.msgModalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} accessibilityViewIsModal={true}>
+          <View style={styles.msgModalContent}>
+            <Text style={styles.msgModalTitle} accessibilityRole="header">✉️ 发送信息给客服</Text>
+            <Text style={styles.msgModalSubtitle}>请描述您的问题或申诉理由，客服将尽快处理。</Text>
+            <TextInput
+              style={styles.msgModalInput}
+              multiline
+              numberOfLines={4}
+              placeholder="请输入您的申诉信息..."
+              placeholderTextColor="#767676"
+              value={messageText}
+              onChangeText={setMessageText}
+              accessibilityLabel="申诉信息输入框"
+            />
+            <View style={styles.msgModalButtons}>
+              <Pressable style={styles.msgCancelBtn} onPress={() => setMessageModalVisible(false)} accessibilityRole="button" accessibilityLabel="取消发送">
+                <Text style={styles.msgCancelBtnText}>取消</Text>
+              </Pressable>
+              <Pressable style={styles.msgSaveBtn} onPress={submitAppealMessage} accessibilityRole="button" accessibilityLabel="确认发送">
+                <Text style={styles.msgSaveBtnText}>发送</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
       <CustomAlert
         visible={alertConfig.visible}
         title={alertConfig.title}
@@ -355,4 +411,15 @@ const styles = StyleSheet.create({
   modalButtons: { flexDirection: 'column', gap: 12, marginTop: 25, width: '100%' },
   modalBtn: { paddingVertical: 20, borderRadius: 12, alignItems: 'center', minHeight: 65 },
   btnText: { fontSize: 22, fontWeight: 'bold' },
+  // Msg Modal Styles
+  msgModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  msgModalContent: { backgroundColor: 'white', width: '90%', borderRadius: 20, padding: 24, elevation: 10 },
+  msgModalTitle: { fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 8, textAlign: 'center' },
+  msgModalSubtitle: { fontSize: 16, color: '#666', marginBottom: 20, textAlign: 'center' },
+  msgModalInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 14, fontSize: 18, marginBottom: 20, backgroundColor: '#fafafa', minHeight: 120, textAlignVertical: 'top' },
+  msgModalButtons: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+  msgCancelBtn: { flex: 1, backgroundColor: '#eee', padding: 16, borderRadius: 10, alignItems: 'center' },
+  msgCancelBtnText: { fontSize: 18, color: '#666', fontWeight: 'bold' },
+  msgSaveBtn: { flex: 1, backgroundColor: '#1565C0', padding: 16, borderRadius: 10, alignItems: 'center' },
+  msgSaveBtnText: { fontSize: 18, color: 'white', fontWeight: 'bold' },
 });

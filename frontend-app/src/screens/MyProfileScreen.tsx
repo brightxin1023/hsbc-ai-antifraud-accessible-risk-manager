@@ -36,6 +36,10 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
   const [tempPhone, setTempPhone] = useState(emergencyContact.phone);
   const [tempEmail, setTempEmail] = useState(emergencyContact.email);
 
+  // 客服信息发送 Modal 状态
+  const [messageModalVisible, setMessageModalVisible] = useState(false);
+  const [messageText, setMessageText] = useState('');
+
   const today = new Date();
   const dateString = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
 
@@ -195,6 +199,19 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
     ]);
   };
 
+  const handleSOSMessage = () => {
+    setMessageText('');
+    setMessageModalVisible(true);
+  };
+
+  const submitSOSMessage = () => {
+    if (!messageText.trim()) {
+      return showAlert("提示", "请输入您要发送的内容。");
+    }
+    setMessageModalVisible(false);
+    showAlert("✅ 发送成功", "人工客服已收到您的信息，将尽快回复您。");
+  };
+
   const confirmLogout = () => {
     showAlert("安全退出登录", "确定要安全退出当前账户吗？", [
       { text: "取消", style: "cancel" },
@@ -294,9 +311,15 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
           </Pressable>
         </View>
 
-        <Pressable style={styles.sosBtn} onPress={handleSOSCall} accessibilityRole="button" accessibilityLabel="呼叫人工客服">
-          <Text style={styles.sosBtnText}>📞 呼叫人工客服</Text>
-        </Pressable>
+        {/* 双按钮：呼叫与发信息 */}
+        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+          <Pressable style={[styles.sosBtn, { backgroundColor: '#FFA000', flex: 1 }]} onPress={handleSOSCall} accessibilityRole="button" accessibilityLabel="呼叫人工客服">
+            <Text style={styles.sosBtnText}>📞 呼叫客服</Text>
+          </Pressable>
+          <Pressable style={[styles.sosBtn, { backgroundColor: '#1565C0', flex: 1, marginBottom: 0 }]} onPress={handleSOSMessage} accessibilityRole="button" accessibilityLabel="发送信息给人工客服">
+            <Text style={[styles.sosBtnText, { color: 'white' }]}>✉️ 发送信息</Text>
+          </Pressable>
+        </View>
 
         <Pressable style={styles.logoutBtn} onPress={confirmLogout} accessibilityRole="button" accessibilityLabel="安全退出登录">
           <Text style={styles.logoutBtnText}>安全退出登录</Text>
@@ -384,6 +407,34 @@ export default function MyProfileScreen({ userPhone, onLogout, emergencyContact,
         </View>
       </Modal>
 
+      {/* 客服发信 Modal */}
+      <Modal visible={messageModalVisible} transparent={true} animationType="fade">
+        <KeyboardAvoidingView style={styles.msgModalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} accessibilityViewIsModal={true}>
+          <View style={styles.msgModalContent}>
+            <Text style={styles.msgModalTitle} accessibilityRole="header">✉️ 发送信息给客服</Text>
+            <Text style={styles.msgModalSubtitle}>请描述您的问题或需要协助的事项，客服将尽快处理。</Text>
+            <TextInput
+              style={styles.msgModalInput}
+              multiline
+              numberOfLines={4}
+              placeholder="请输入您想对客服说的话..."
+              placeholderTextColor="#767676"
+              value={messageText}
+              onChangeText={setMessageText}
+              accessibilityLabel="客服信息输入框"
+            />
+            <View style={styles.msgModalButtons}>
+              <Pressable style={styles.msgCancelBtn} onPress={() => setMessageModalVisible(false)} accessibilityRole="button" accessibilityLabel="取消发送">
+                <Text style={styles.msgCancelBtnText}>取消</Text>
+              </Pressable>
+              <Pressable style={styles.msgSaveBtn} onPress={submitSOSMessage} accessibilityRole="button" accessibilityLabel="确认发送">
+                <Text style={styles.msgSaveBtnText}>发送</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
       <CustomAlert 
         visible={alertConfig.visible} 
         title={alertConfig.title} 
@@ -421,7 +472,7 @@ const styles = StyleSheet.create({
   menuIconLarge: { fontSize: 28, marginBottom: 8 },
   menuText: { fontSize: 18, color: '#333', fontWeight: '500' },
   menuArrow: { fontSize: 24, color: '#666666' }, 
-  sosBtn: { backgroundColor: '#FFA000', padding: 20, borderRadius: 16, alignItems: 'center', marginBottom: 16, minHeight: 64, elevation: 2 },
+  sosBtn: { padding: 20, borderRadius: 16, alignItems: 'center', marginBottom: 16, minHeight: 64, elevation: 2 },
   sosBtnText: { color: '#1A1A1A', fontSize: 22, fontWeight: 'bold' }, 
   logoutBtn: { backgroundColor: '#D32F2F', padding: 20, borderRadius: 16, alignItems: 'center', minHeight: 64, elevation: 2 },
   logoutBtnText: { color: 'white', fontSize: 22, fontWeight: 'bold' },
@@ -440,4 +491,15 @@ const styles = StyleSheet.create({
   voiceModalTitle: { fontSize: 30, fontWeight: 'bold', color: '#D32F2F', marginBottom: 15 },
   voiceModalSubtitle: { fontSize: 20, fontWeight: '500', color: '#333', marginBottom: 20, textAlign: 'center', lineHeight: 30 },
   voiceCountdownText: { fontSize: 24, fontWeight: 'bold', color: '#333' },
+  // Msg Modal Styles
+  msgModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  msgModalContent: { backgroundColor: 'white', width: '90%', borderRadius: 20, padding: 24, elevation: 10 },
+  msgModalTitle: { fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 8, textAlign: 'center' },
+  msgModalSubtitle: { fontSize: 16, color: '#666', marginBottom: 20, textAlign: 'center' },
+  msgModalInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 14, fontSize: 18, marginBottom: 20, backgroundColor: '#fafafa', minHeight: 120, textAlignVertical: 'top' },
+  msgModalButtons: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+  msgCancelBtn: { flex: 1, backgroundColor: '#eee', padding: 16, borderRadius: 10, alignItems: 'center' },
+  msgCancelBtnText: { fontSize: 18, color: '#666', fontWeight: 'bold' },
+  msgSaveBtn: { flex: 1, backgroundColor: '#1565C0', padding: 16, borderRadius: 10, alignItems: 'center' },
+  msgSaveBtnText: { fontSize: 18, color: 'white', fontWeight: 'bold' },
 });
